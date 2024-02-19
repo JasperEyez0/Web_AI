@@ -34,16 +34,6 @@ app.get('/professor', (req, res) => {
     });
 });
 
-app.get('/phome', (req, res) => {
-    db.query("SELECT username FROM professor", (err, result) => {
-        if (err) {
-            console.log(err);
-        } else {
-            res.send(result);
-        }
-    });
-});
-
 app.post('/login', (req, res) => {
     db.execute('SELECT * FROM professor WHERE username=?', [req.body.username],
         function(err, professor, fields) {

@@ -10,7 +10,7 @@ import {useSelector} from "react-redux"
 function Home () {
 
   const [pList, setPList] = useState([]);
-  const {user} = useSelector((state)=> ({...state}))
+  const { user } = useSelector((state)=> ({...state}))
 
   useEffect(() => {
     if(user !== null) {
@@ -20,9 +20,10 @@ function Home () {
 
   const fetchP = () => {
     Axios.get(`http://localhost:3001/professor?username=${user.username}`).then((res) => {
-      if (res.data.length > 0) {
-        setPList(res.data[0]);
-        console.log(res.data[0]);
+      const foundProfessor = res.data.find((professor) => professor.username === user.username);
+      if (foundProfessor) {
+        setPList(foundProfessor);
+        console.log(foundProfessor);
       } else {
         console.log(`No data found for username: ${user.username}`);
       }
