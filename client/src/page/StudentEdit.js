@@ -37,14 +37,15 @@ const StudentEdit = () => {
       .then((res) => {
         setsList(res.data);
         console.log("Data received:", res.data);
-        console.log(sList)
+        console.log(sList.s_id)
       })
       .catch((err) => {
         console.log("Error fetching data:", err);
       });
   };
+
   useEffect(() => {
-    console.log("sList updated:", sList);
+    console.log("check sList:", sList);
   }, [sList]);
 
   const beforeUpload = (file) => {
@@ -152,10 +153,7 @@ const StudentEdit = () => {
               placeholder="เพศ"
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
               value={sList.gender}
-              onChange={(e) => {
-                console.log("e.target.value:", e.target.value);
-                setsList({ ...sList, gender: e.target.value });
-              }}
+              onChange={(e) => setsList({ ...sList, gender: e.target.value })}
             />
           </div>
           <div className="text-center justify-center pt-10">
