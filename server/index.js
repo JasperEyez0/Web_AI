@@ -79,7 +79,7 @@ app.post("/current-user", auth, function(req, res, next) {
         db.execute('SELECT * FROM professor WHERE username=?', [req.professor.username],
             function(err, professor, fields) {
                 if (err) {
-                    retrurn
+                    return
                 } else {
                     const userInfo = {
                         ID: professor[0].p_id,
@@ -95,6 +95,30 @@ app.post("/current-user", auth, function(req, res, next) {
         res.status(500).send("Server Error")
     }
 })
+
+app.post('/studentadd', jsonParser, function(req, res, next) {
+    db.execute('SELECT * FROM student WHERE s_id=?', [req.body.studentId], function(err, student, fields) {
+        if (student.length === 0) {
+            const { studentId, firstName, lastName, birthDate, gender, pic } = req.body;
+            db.execute('INSERT INTO student (s_id, s_name, s_sname, dateofbirth, gender, pic) VALUES (?, ?, ?, ?, ?, ?)', [studentId, firstName, lastName, birthDate, gender, pic], function(err, results, fields) {
+                if (err) {
+                    res.json({ status: 'error', message: err });
+                    return;
+                }
+                res.json({ status: 'ok' });
+            });
+            return;
+        }
+        if (err) {
+            res.json({ status: 'error', message: err });
+            return;
+        }
+        if (c.isEqual(student[0].s_id, req.body.studentId)) {
+            return res.status(400).send("Student ID is already existed");
+        }
+    });
+});
+
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
