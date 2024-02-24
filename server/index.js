@@ -119,6 +119,25 @@ app.post('/studentadd', jsonParser, function(req, res, next) {
     });
 });
 
+app.get('/student', (req, res) => {
+    db.query("SELECT * FROM student", (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.send(result);
+        }
+    });
+});
+
+app.get('/studentedit', (req, res) => {
+    db.query("SELECT * FROM student WHERE s_id=?", [req.body.studentId], (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.send(result);
+        }
+    });
+});
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');

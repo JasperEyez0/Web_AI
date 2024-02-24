@@ -14,27 +14,23 @@ const Student = () => {
 
     const {user} = useSelector((state)=> ({...state}))
 
-    const [profileList,setProfileList] = useState([]);
+    const [sList,setsList] = useState([]);
 
     useEffect(() => {
-        fetchProfile();
+        fetchS();
     }, []);
 
-    const fetchProfile = () => {
-        Axios.get(`http://localhost:3001/professor?username=${user.username}`).then((res) => {
-          const foundProfessor = res.data.find((professor) => professor.username === user.username);
-          if (foundProfessor) {
-            setProfileList(foundProfessor);
-            //console.log(foundProfessor);
-          } else {
-            console.log(`No data found for username: ${user.username}`);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-      };
-        //6 = 24px 24 = 96px
+    const fetchS = () => {
+      Axios.get(`http://localhost:3001/student`).then((res) => {
+        setsList(res.data)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    };
+
+    const handleDelete = () => {}
+    
     return (
         <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
           <div className="flex flex-row w-full h-fit my-10 px-24 justify-start">
@@ -60,20 +56,21 @@ const Student = () => {
                 </tr>
               </thead>
               <tbody>
-                  <>{/*map ตรงนี้*/}</>
-                <tr className='border-collapse border border-slate-300 h-[32px] bg-white'>
-                  <th className='pl-[10px]'>นันทินี แสวงโชคพาหะ</th>
-                  <th>6404062610090</th>
-                  <th>11/3/2546</th>
-                  <th>หญิง</th>
-                  <th>/spicture/6404062610090/</th>
-                  <th>
-                    <div className="flex items-center justify-around">
-                      <NavLink  to={"/studentedit"} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
-                      <button className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'><RiDeleteBin5Fill /></button>
-                    </div>
-                  </th>
-                </tr>
+                {sList.map((student, index) => (
+                  <tr key={index} className='border-collapse border border-slate-300 h-[32px] bg-white'>
+                    <th className='pl-[10px]'>{student.s_name} {student.s_sname}</th>
+                    <th>{student.s_id}</th>
+                    <th>{student.dateofbirth}</th>
+                    <th>{student.gender}</th>
+                    <th>{student.pic}</th>
+                    <th>
+                      <div className="flex items-center justify-around">
+                        <NavLink to={`/studentedit`} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
+                        <button onClick={() => handleDelete(student.s_id)} className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'><RiDeleteBin5Fill /></button>
+                      </div>
+                    </th>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
