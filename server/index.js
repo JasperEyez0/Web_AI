@@ -130,9 +130,18 @@ app.get('/student', (req, res) => {
 });
 
 app.get('/studentedit', (req, res) => {
-    db.query("SELECT * FROM student WHERE s_id=?", [req.body.studentId], (err, result) => {
+    const studentId = req.query.studentId; // ดึงค่า studentId จาก query parameters
+    // Log or print the studentId to the console
+    console.log('Received studentId:', studentId);
+
+    if (!studentId) {
+        return res.status(400).send("Missing 'studentId' parameter");
+    }
+
+    db.query('SELECT * FROM student WHERE s_id=?', [studentId], (err, result) => {
         if (err) {
             console.log(err);
+            return res.status(500).send("Internal Server Error");
         } else {
             res.send(result);
         }

@@ -6,17 +6,46 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 
 import Axios from 'axios'
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom';
 
 const StudentEdit = () => {
 
-  const [values, setValues] = useState({
-    studentId: "",
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const studentId = queryParams.get('studentId');
+  console.log(studentId)
+  const [sList, setsList] = useState({
     firstName: "",
     lastName: "",
+    studentId: "",
     birthDate: "",
     gender: "",
     pic: ""
   });
+
+  /*จะเรียกใช้เมื่อมีค่าจริงๆ ไม่ใช่ null หรือ undifined*/
+  useEffect(() => {
+    if (studentId) {
+      fetchStudentById(studentId);
+    }
+  }, [studentId]);
+
+  const fetchStudentById = (id) => {
+    console.log("Fetching data for studentId:", id);
+  
+    Axios.get(`http://localhost:3001/studentedit?studentId=${id}`)
+      .then((res) => {
+        setsList(res.data);
+        console.log("Data received:", res.data);
+        console.log(sList)
+      })
+      .catch((err) => {
+        console.log("Error fetching data:", err);
+      });
+  };
+  useEffect(() => {
+    console.log("sList updated:", sList);
+  }, [sList]);
 
   const beforeUpload = (file) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
@@ -79,11 +108,55 @@ const StudentEdit = () => {
         </div>
         <form action="">
           <div className="flex flex-row w-full justify-around">
-              <input type="text" placeholder="ชื่อ" className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'/>
-              <input type="text" placeholder="สกุล" className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'/>
-              <input type="number" min={0} onKeyPress={(e) => {if (e.target.value.length === 13) {e.preventDefault();}}} placeholder="รหัสนศ." id='idnum' className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'/>
-              <input type="date" placeholder="วันเกิด" className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'/>
-              <input type="text" placeholder="เพศ" className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'/>
+          <input
+            type="text"
+            placeholder="ชื่อ"
+            className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
+            value={sList.s_name}
+            onChange={(e) => setsList({ ...sList, s_name: e.target.value })}
+          />
+
+            <input
+              type="text"
+              placeholder="สกุล"
+              className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
+              value={sList.s_sname}
+              onChange={(e) => setsList({ ...sList, s_sname: e.target.value })}
+            />
+
+            <input
+              type="number"
+              min={0}
+              onKeyPress={(e) => {
+                if (e.target.value.length === 13) {
+                  e.preventDefault();
+                }
+              }}
+              placeholder="รหัสนศ."
+              id='idnum'
+              className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
+              value={sList.s_id}
+              onChange={(e) => setsList({ ...sList, s_id: e.target.value })}
+            />
+
+            <input
+              type="date"
+              placeholder="วันเกิด"
+              className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
+              value={sList.dateofbirth}
+              onChange={(e) => setsList({ ...sList, dateofbirth: e.target.value })}
+            />
+
+            <input
+              type="text"
+              placeholder="เพศ"
+              className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
+              value={sList.gender}
+              onChange={(e) => {
+                console.log("e.target.value:", e.target.value);
+                setsList({ ...sList, gender: e.target.value });
+              }}
+            />
           </div>
           <div className="text-center justify-center pt-10">
             <Upload 

@@ -65,7 +65,7 @@ const Student = () => {
                     <th>{student.pic}</th>
                     <th>
                       <div className="flex items-center justify-around">
-                        <NavLink to={`/studentedit`} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
+                        <NavLink to={`/studentedit?studentId=${student.s_id}`} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
                         <button onClick={() => handleDelete(student.s_id)} className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'><RiDeleteBin5Fill /></button>
                       </div>
                     </th>
