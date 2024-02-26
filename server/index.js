@@ -120,11 +120,19 @@ app.post('/studentadd', jsonParser, function(req, res, next) {
 });
 
 app.get('/student', (req, res) => {
-    db.query("SELECT * FROM student", (err, result) => {
+    const searchQuery = req.query.search || ''; // ดึงคำค้นหาจาก query parameters
+
+    let query = "SELECT * FROM student";
+    if (searchQuery) {
+        query += ` WHERE s_name LIKE '%${searchQuery}%' OR s_sname LIKE '%${searchQuery}%' OR s_id LIKE '%${searchQuery}%'`;
+    }
+
+    db.query(query, (err, result) => {
         if (err) {
-            console.log(err);
+        console.log(err);
+        res.status(500).json({ message: 'Internal Server Error' });
         } else {
-            res.send(result);
+        res.send(result);
         }
     });
 });
@@ -172,7 +180,24 @@ app.put('/student/:studentId', (req, res) => {
         }
       }
     );
-  });
+});
+
+app.delete('/student/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+
+    db.query("DELETE FROM student WHERE s_id = ?", [studentId], (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'An error occurred deleting data.' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.json({ message: 'Student information has been deleted.' });
+            } else {
+                res.status(404).json({ message: 'The student you want to delete was not found.' });
+            }
+        }
+    });
+});
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
