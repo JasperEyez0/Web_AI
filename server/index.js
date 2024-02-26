@@ -129,24 +129,50 @@ app.get('/student', (req, res) => {
     });
 });
 
-app.get('/studentedit', (req, res) => {
-    const studentId = req.query.studentId; // ดึงค่า studentId จาก query parameters
-    // Log or print the studentId to the console
-    console.log('Received studentId:', studentId);
+app.get('/student/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+    //console.log('Received studentId:', studentId); // Log or print the studentId to the console
 
     if (!studentId) {
-        return res.status(400).send("Missing 'studentId' parameter");
+        // If studentId is not provided, return an error response
+        return res.status(400).json({ error: 'Student ID is required.' });
     }
 
-    db.query('SELECT * FROM student WHERE s_id=?', [studentId], (err, result) => {
+    db.query("SELECT * FROM student WHERE s_id = ?", [studentId], (err, result) => {
         if (err) {
             console.log(err);
-            return res.status(500).send("Internal Server Error");
+            return res.status(500).json({ error: 'Internal Server Error' });
         } else {
-            res.send(result);
+            //console.log(result)
+            if (result.length === 0) {
+                // If no student is found with the provided ID, return a not found response
+                return res.status(404).json({ error: 'Student not found.' });
+            }
+
+            // If student is found, return the result
+            res.json(result[0]);
         }
     });
 });
+
+app.put('/student/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+    const updatedStudent = req.body;
+  
+    db.query(
+      'UPDATE student SET ? WHERE s_id = ?',
+      [updatedStudent, studentId],
+      (err, result) => {
+        if (err) {
+          console.log('Error updating student:', err);
+          res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+          console.log('Student updated successfully');
+          res.status(200).json({ success: true });
+        }
+      }
+    );
+  });
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');

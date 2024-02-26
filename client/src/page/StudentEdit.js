@@ -5,48 +5,55 @@ import { Upload, message } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 
 import Axios from 'axios'
-import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react'
+import { useParams } from 'react-router-dom';
 
 const StudentEdit = () => {
 
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const studentId = queryParams.get('studentId');
-  console.log(studentId)
-  const [sList, setsList] = useState({
-    firstName: "",
-    lastName: "",
-    studentId: "",
-    birthDate: "",
-    gender: "",
-    pic: ""
-  });
+  const { studentId } = useParams();
 
-  /*จะเรียกใช้เมื่อมีค่าจริงๆ ไม่ใช่ null หรือ undifined*/
-  useEffect(() => {
+  const [student, setStudent] = useState({
+    s_name: '',
+    s_sname: '',
+    s_id: studentId,
+    dateofbirth: '',
+    gender: '',
+    pic: '',
+  });
+  
+  const [imageUrl, setImageUrl] = useState();
+  const [loading, setLoading] = useState(false);
+
+  const fetchSData = useCallback(() => {
     if (studentId) {
-      fetchStudentById(studentId);
+      Axios.get(`http://localhost:3001/student/${studentId}`)
+        .then((res) => {
+          setStudent((prevStudent) => ({
+            ...prevStudent,
+            ...res.data,
+          }));
+          console.log(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   }, [studentId]);
 
-  const fetchStudentById = (id) => {
-    console.log("Fetching data for studentId:", id);
-  
-    Axios.get(`http://localhost:3001/studentedit?studentId=${id}`)
+  useEffect(() => {
+    fetchSData();
+  }, [fetchSData, studentId]);
+
+  const handleUpdate = () => {
+    Axios.put(`http://localhost:3001/student/${studentId}`, student)
       .then((res) => {
-        setsList(res.data);
-        console.log("Data received:", res.data);
-        console.log(sList.s_id)
+        console.log('Student updated successfully:', res.data);
+        // You may want to redirect the user or perform other actions upon successful update
       })
       .catch((err) => {
-        console.log("Error fetching data:", err);
+        console.log('Error updating student:', err);
       });
   };
-
-  useEffect(() => {
-    console.log("check sList:", sList);
-  }, [sList]);
 
   const beforeUpload = (file) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
@@ -59,8 +66,7 @@ const StudentEdit = () => {
     }
     return isJpgOrPng && isLt2M;
   };
-  const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState();
+
   const handleChange = (info) => {
     if (info.file.status === 'uploading') {
       setLoading(true);
@@ -113,16 +119,16 @@ const StudentEdit = () => {
             type="text"
             placeholder="ชื่อ"
             className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
-            value={sList.s_name}
-            onChange={(e) => setsList({ ...sList, s_name: e.target.value })}
+            value={student.s_name || ""}
+            onChange={(e) => setStudent({ ...student, s_name: e.target.value })}
           />
 
             <input
               type="text"
               placeholder="สกุล"
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
-              value={sList.s_sname}
-              onChange={(e) => setsList({ ...sList, s_sname: e.target.value })}
+              value={student.s_sname || ""}
+              onChange={(e) => setStudent({ ...student, s_sname: e.target.value })}
             />
 
             <input
@@ -136,24 +142,24 @@ const StudentEdit = () => {
               placeholder="รหัสนศ."
               id='idnum'
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
-              value={sList.s_id}
-              onChange={(e) => setsList({ ...sList, s_id: e.target.value })}
+              value={student.s_id || ""}
+              onChange={(e) => setStudent({ ...student, s_id: e.target.value })}
             />
 
             <input
               type="date"
               placeholder="วันเกิด"
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
-              value={sList.dateofbirth}
-              onChange={(e) => setsList({ ...sList, dateofbirth: e.target.value })}
+              value={student.dateofbirth || ""}
+              onChange={(e) => setStudent({ ...student, dateofbirth: e.target.value })}
             />
 
             <input
               type="text"
               placeholder="เพศ"
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
-              value={sList.gender}
-              onChange={(e) => setsList({ ...sList, gender: e.target.value })}
+              value={student.gender || ""}
+              onChange={(e) => setStudent({ ...student, gender: e.target.value })}
             />
           </div>
           <div className="text-center justify-center pt-10">
@@ -177,7 +183,7 @@ const StudentEdit = () => {
           </div>
         </form>
         <div className="flex m-6 items-center justify-center">
-          <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]'>Edit</button>
+          <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]'  onClick={handleUpdate}>Edit</button>
         </div>
       </div>
     </div>

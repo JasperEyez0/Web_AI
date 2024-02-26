@@ -1,11 +1,12 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom'
+import { NavLink, Route } from 'react-router-dom'
 import {useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom'
 import { IoIosSearch } from "react-icons/io";
 import { TiUserAdd } from "react-icons/ti";
 import { FaUserEdit } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
+import StudentEdit from './StudentEdit';
 
 import Axios from 'axios'
 import { useState, useEffect } from 'react'
@@ -65,7 +66,7 @@ const Student = () => {
                     <th>{student.pic}</th>
                     <th>
                       <div className="flex items-center justify-around">
-                        <NavLink to={`/studentedit?studentId=${student.s_id}`} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
+                        <NavLink to={`/studentedit/${student.s_id}`} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
                         <button onClick={() => handleDelete(student.s_id)} className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'><RiDeleteBin5Fill /></button>
                       </div>
                     </th>

@@ -21,16 +21,16 @@ import rootReducer from './reducer/combineReduxer';
 const store = createStore(rootReducer)
 
 const router = createBrowserRouter(createRoutesFromElements(
-  <Route element = {<App/>}>
-    <Route path='/' element ={<Home/>}/>
-    <Route path='/login' element ={<Login/>}/>
-    <Route path='/profile' element ={<Profile/>}/>
-    <Route path='/greetword' element ={<Greetword/>}/>
-    <Route path='/student' element ={<Student/>}/>
-    <Route path='/studentadd' element ={<StudentAdd/>}/>
-    <Route path='/studentedit' element ={<StudentEdit/>}/>
-    <Route path='/report' element ={<Report/>}/>
-  </Route>
+    <Route element = {<App/>}>
+      <Route path='/' element={<Home/>}/>
+      <Route path='/login' element={<Login/>}/>
+      <Route path='/profile' element={<Profile/>}/>
+      <Route path='/greetword' element={<Greetword/>}/>
+      <Route path='/student' element={<Student/>}/>
+      <Route path='/studentadd' element={<StudentAdd/>}/>
+      <Route path='/studentedit/:studentId' element={<StudentEdit />} />
+      <Route path='/report' element ={<Report/>}/>
+    </Route>
   ))
 
   const root = ReactDOM.createRoot(document.getElementById('root'));
