@@ -1,19 +1,14 @@
 import React from 'react';
-import { NavLink, Route } from 'react-router-dom'
-import {useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { IoIosSearch } from "react-icons/io";
 import { TiUserAdd } from "react-icons/ti";
 import { FaUserEdit } from "react-icons/fa";
 import { RiDeleteBin5Fill } from "react-icons/ri";
-import StudentEdit from './StudentEdit';
 
 import Axios from 'axios'
 import { useState, useEffect } from 'react'
 
 const Student = () => {
-
-    const {user} = useSelector((state)=> ({...state}))
 
     const [sList,setsList] = useState([]);
 
@@ -61,7 +56,7 @@ const Student = () => {
                   <tr key={index} className='border-collapse border border-slate-300 h-[32px] bg-white'>
                     <th className='pl-[10px]'>{student.s_name} {student.s_sname}</th>
                     <th>{student.s_id}</th>
-                    <th>{student.dateofbirth}</th>
+                    <th>{student.dateofbirth ? new Date(student.dateofbirth).toLocaleDateString() : ""}</th>
                     <th>{student.gender}</th>
                     <th>{student.pic}</th>
                     <th>

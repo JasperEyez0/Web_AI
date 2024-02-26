@@ -103,6 +103,7 @@ const StudentEdit = () => {
     reader.addEventListener('load', () => callback(reader.result));
     reader.readAsDataURL(img);
   };
+  
   return (
     <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
       <div className="flex flex-col w-full h-fit my-10 px-24 justify-start">
@@ -150,7 +151,7 @@ const StudentEdit = () => {
               type="date"
               placeholder="วันเกิด"
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
-              value={student.dateofbirth || ""}
+              value={student.dateofbirth ? student.dateofbirth.split('T')[0] : ""}
               onChange={(e) => setStudent({ ...student, dateofbirth: e.target.value })}
             />
 

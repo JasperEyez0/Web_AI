@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import '../page/StudentAdd.css'; 
 import Validation from '../function/addValidation'
 
@@ -7,7 +7,7 @@ import { Upload, message } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 
 import axios from 'axios'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 const StudentAdd = () => {
 
