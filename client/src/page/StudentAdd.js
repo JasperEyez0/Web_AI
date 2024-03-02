@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'
-import '../page/StudentAdd.css'; 
 import Validation from '../function/addValidation'
 
 import axios from 'axios'

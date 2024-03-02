@@ -1,66 +1,130 @@
 import React from 'react'
-import { Link, NavLink } from 'react-router-dom'
-import logo from "../assests/img/logo.svg"
 
 import Axios from 'axios'
-import { useState, useEffect } from 'react'
-import {useSelector} from "react-redux"
-import '../page/Greetword.css'; 
+import { useState, useEffect, useCallback } from 'react';
 import { RiDeleteBin5Fill } from "react-icons/ri";
 
 function Greetword () {
 
-  const [pList, setPList] = useState([]);
-  const {user} = useSelector((state)=> ({...state}))
+  const [greetData, setGreetData] = useState([]);
+  const [newGreet, setNewGreet] = useState({ greeting: '', feeling: '' });
 
-  useEffect(() => {
-    if(user !== null) {
-      fetchP();
+  // ประกาศ fetchData โดยใช้ useCallback เพื่อป้องกันการสร้างฟังก์ชันใหม่ในทุก render
+  const fetchData = useCallback(async () => {
+    try {
+      // ดึงข้อมูลจาก API endpoint
+      const response = await Axios.get('http://localhost:3001/greetword');
+      setGreetData(response.data);
+      console.log(response.data)
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   }, []);
 
-  const fetchP = () => {
-    Axios.get(`http://localhost:3001/professor?username=${user.username}`).then((res) => {
-      if (res.data.length > 0) {
-        setPList(res.data[0]);
-        console.log(res.data[0]);
-      } else {
-        console.log(`No data found for username: ${user.username}`);
+  useEffect(() => {
+    // เรียกใช้ fetchData เมื่อ component ถูกโหลด
+    fetchData();
+  }, [fetchData]);
+
+  const handleAddGreet = async () => {
+    try {
+      // ส่ง request ไปยัง API endpoint เพื่อเพิ่มข้อมูล
+      await Axios.post('http://localhost:3001/greetword', {
+        greeting: newGreet.greeting,
+        feeling: newGreet.feeling,
+      });
+  
+      // หลังจากเพิ่มข้อมูลเสร็จ, เรียกใช้ fetchData เพื่อดึงข้อมูลทั้งหมดใหม่
+      fetchData();
+  
+      // ล้างข้อมูลใน input fields
+      setNewGreet({ greeting: '', feeling: '' });
+    } catch (error) {
+      console.error('Error adding data:', error);
+  
+      // เพิ่ม console log เพื่อดู response ที่ได้มาจาก server
+      if (error.response) {
+        console.error('Server response:', error.response.data);
       }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    }
   };
 
-return (
-  <>
-  <body>
-    <div class = "all">
-  <div class="container">
-    <div class ="box">
-        <h1 class="greeting">คำทักทาย</h1>
-        <h1 class="feeling">เเสดงความรู้สึก</h1>
+  const handleDeleteGreet = (greetGreeting) => {
+    // ส่ง request ไปยัง API endpoint เพื่อลบข้อมูล
+    Axios.delete(`http://localhost:3001/greetword/${greetGreeting}`)
+      .then((res) => {
+        console.log('Data deleted successfully:', res.data);
+        // หลังจากลบข้อมูลเสร็จ, เรียกใช้ fetchData เพื่อดึงข้อมูลทั้งหมดใหม่
+        fetchData();
+      })
+      .catch((err) => {
+        console.error('Error deleting data:', err);
+      });
+  };
+
+  return (
+    <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
+      <div className="flex flex-col w-full">
+        <div className='flex flex-row w-full h-fit mt-10 mb-2 px-24 justify-evenly items-center'>
+          <p className='w-[600px] px-2.5 py-[2px]'>คำทักทาย</p>
+          <p className='w-[400px] px-2.5 py-[2px]'>ความรู้สึก</p>
+          <p className='w-[60px]'></p>
+        </div>
+        <form
+          className="flex flex-row w-full h-fit px-24 justify-evenly items-center"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAddGreet();
+          }}
+        >
+          <input
+            type="text"
+            placeholder="คำทักทาย"
+            className="w-[600px] px-2.5 py-[2px] rounded"
+            value={newGreet.greeting}
+            onChange={(e) => setNewGreet({ ...newGreet, greeting: e.target.value })}
+          />
+          <input
+            type="text"
+            placeholder="ความรู้สึก"
+            className="w-[400px] px-2.5 py-[2px] rounded"
+            value={newGreet.feeling}
+            onChange={(e) => setNewGreet({ ...newGreet, feeling: e.target.value })}
+          />
+          <button type="submit" className="w-[60px] py-[2px] rounded bg-sky-800 text-white">
+            Add
+          </button>
+        </form>
+      </div>
+      <div className="flex flex-row w-full h-fit px-24 justify-evenly">
+        <table className="min-w-[1200px] table-auto text-left">
+          <thead>
+            <tr>
+              <th className="py-4">คำทักทาย</th>
+              <th className="py-4">ความรู้สึก</th>
+              <th className="py-4"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {greetData.map((item) => (
+              <tr key={item.id}  className='border-collapse border border-slate-300 h-[32px] bg-white'>
+                <td className="pl-[10px]">{item.greeting}</td>
+                <td>{item.feel}</td>
+                <td className='flex justify-center'>
+                  <button
+                    onClick={() => handleDeleteGreet(item.greeting)}
+                    className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'
+                  >
+                    <RiDeleteBin5Fill />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="feeling-section">
-        <input type='text'id="text-feel" placeholder='คำทักทาย' /> 
-        <input type='text2'id="text-feel2" placeholder='เเสดงความรู้สึก' /> 
-    <button id="Add-btn">เพิ่ม</button>
-    </div>
-  </div>
-  <div class = "big-box">
-        <h1 class="greeting2">คำทักทาย</h1>
-        <h1 class="feeling2">เเสดงความรู้สึก</h1>
-  </div>
-  <div class = "box-colluem">
-        <h1 class="h">สวัสดีทุกท่านที่มาร่วมรับชม</h1>
-        <h1 class="f">Happy</h1>
-    <button id="Add-btn"><RiDeleteBin5Fill/></button>
-  </div>
-</div>
-  </body>
-</>
-)
+  );
 }
 
 export default Greetword

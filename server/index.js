@@ -227,6 +227,47 @@ app.delete('/student/:studentId', (req, res) => {
     });
 });
 
+app.get('/greetword', (req, res) => {
+    db.query("SELECT * FROM greetword", (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Internal Server Error' });
+        } else {
+            res.send(result);
+        }
+    });
+});
+
+app.post('/greetword', (req, res) => {
+    const { feeling, greeting } = req.body;
+
+    db.query("INSERT INTO greetword (feel, greeting) VALUES (?, ?)", [feeling, greeting], (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Internal Server Error' });
+        } else {
+            res.json({ message: 'Greetword added successfully.' });
+        }
+    });
+});
+
+app.delete('/greetword/:greeting', (req, res) => {
+    const greetingToDelete = req.params.greeting;
+
+    db.query("DELETE FROM greetword WHERE greeting = ?", [greetingToDelete], (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Internal Server Error' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.json({ message: 'Greetword has been deleted.' });
+            } else {
+                res.status(404).json({ message: 'The greetword you want to delete was not found.' });
+            }
+        }
+    });
+});
+
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
 });
