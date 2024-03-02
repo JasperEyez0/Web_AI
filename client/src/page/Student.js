@@ -60,7 +60,7 @@ const Student = () => {
                 <input
                   type="text"
                   placeholder="Search"
-                  className="w-[450px] px-2.5 py-[2px] rounded-l-lg rounded-r-none"
+                  className="w-[450px] h-[36px] px-2.5 py-[2px] rounded-l-lg rounded-r-none"
                   value={searchQuery}
                   onChange={handleSearchChange}
                 />
