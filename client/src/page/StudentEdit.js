@@ -1,12 +1,10 @@
 import React from 'react';
 import '../page/StudentEdit.css'; 
 
-import { Upload, message } from 'antd';
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-
 import Axios from 'axios'
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom';
+import moment from 'moment-timezone';
 
 const StudentEdit = () => {
 
@@ -20,9 +18,6 @@ const StudentEdit = () => {
     gender: '',
     pic: '',
   });
-  
-  const [imageUrl, setImageUrl] = useState();
-  const [loading, setLoading] = useState(false);
 
   const fetchSData = useCallback(() => {
     if (studentId) {
@@ -53,55 +48,6 @@ const StudentEdit = () => {
       .catch((err) => {
         console.log('Error updating student:', err);
       });
-  };
-
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('Image must smaller than 2MB!');
-    }
-    return isJpgOrPng && isLt2M;
-  };
-
-  const handleChange = (info) => {
-    if (info.file.status === 'uploading') {
-      setLoading(true);
-        return;
-    }
-    if (info.file.status === 'done') {
-      // Get this url from response in real world.
-      getBase64(info.file.originFileObj, (url) => {
-        setLoading(false);
-        setImageUrl(url);
-      });
-    }
-  };
-  const uploadButton = (
-    <button
-      style={{
-        border: 0,
-        background: 'none',
-      }}
-      type="button"
-    >
-      {loading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div
-        style={{
-          marginTop: 8,
-        }}
-      >
-        Upload
-      </div>
-    </button>
-  );
-  const getBase64 = (img, callback) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(img);
   };
   
   return (
@@ -151,7 +97,7 @@ const StudentEdit = () => {
               type="date"
               placeholder="วันเกิด"
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
-              value={student.dateofbirth ? student.dateofbirth.split('T')[0] : ""}
+              value={moment(student.dateofbirth).format('YYYY-MM-DD') || ""}
               onChange={(e) => setStudent({ ...student, dateofbirth: e.target.value })}
             />
 
@@ -163,24 +109,8 @@ const StudentEdit = () => {
               onChange={(e) => setStudent({ ...student, gender: e.target.value })}
             />
           </div>
-          <div className="text-center justify-center pt-10">
-            <Upload 
-              name="avatar"
-              listType="picture-card"
-              className="avatar-uploader"
-              showUploadList={false}
-              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-              beforeUpload={beforeUpload}
-              onChange={handleChange}
-              id='Upload-box'
-            >
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt="avatar"
-                  style={{width: '100%',}}/>)
-                : (uploadButton)}
-            </Upload>
+          <div className="flex justify-center pt-10">
+            <input type="file" name="file" className='flex items-center justify-center'/>
           </div>
         </form>
         <div className="flex m-6 items-center justify-center">
