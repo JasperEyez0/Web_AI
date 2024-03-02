@@ -14,6 +14,12 @@ app.use(express.json());
 
 const c = require('lodash')
 
+//create folder
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' }); // กำหนดโฟลเดอร์ที่ไฟล์จะถูกบันทึกไว้
+
 //middleware
 const { auth } = require('./middleware/auth')
 
@@ -96,23 +102,45 @@ app.post("/current-user", auth, function(req, res, next) {
     }
 })
 
-app.post('/studentadd', jsonParser, function(req, res, next) {
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const studentId = req.body.studentId; // รหัสนักศึกษาที่ส่งมาจาก client
+        const folderPath = path.join(__dirname, 'student_folders', studentId);
+        cb(null, folderPath);
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
+
+app.post('/studentadd', upload.single('file'), jsonParser, function(req, res, next) {
     db.execute('SELECT * FROM student WHERE s_id=?', [req.body.studentId], function(err, student, fields) {
         if (student.length === 0) {
-            const { studentId, firstName, lastName, birthDate, gender, pic } = req.body;
-            db.execute('INSERT INTO student (s_id, s_name, s_sname, dateofbirth, gender, pic) VALUES (?, ?, ?, ?, ?, ?)', [studentId, firstName, lastName, birthDate, gender, pic], function(err, results, fields) {
+            const { studentId, firstName, lastName, birthDate, gender } = req.body;
+
+            const folderPath = path.join(__dirname, 'student_folders', studentId);
+
+            fs.mkdir(folderPath, { recursive: true }, (err) => {
                 if (err) {
-                    res.json({ status: 'error', message: err });
-                    return;
+                    return res.status(500).json({ status: 'error', message: 'Failed to create student folder.' });
                 }
-                res.json({ status: 'ok' });
+
+                const updatedPicPath = path.join('student_folders', studentId);
+                db.execute('INSERT INTO student (s_id, s_name, s_sname, dateofbirth, gender, pic) VALUES (?, ?, ?, ?, ?, ?)', [studentId, firstName, lastName, birthDate, gender, updatedPicPath], function(err, results, fields) {
+                    if (err) {
+                        return res.status(500).json({ status: 'error', message: 'Failed to update database.' });
+                    }
+                    res.json({ status: 'ok' });
+                });
             });
+
             return;
         }
+
         if (err) {
-            res.json({ status: 'error', message: err });
-            return;
+            return res.status(500).json({ status: 'error', message: 'Database error.' });
         }
+
         if (c.isEqual(student[0].s_id, req.body.studentId)) {
             return res.status(400).send("Student ID is already existed");
         }

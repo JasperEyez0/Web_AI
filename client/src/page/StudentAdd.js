@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import '../page/StudentAdd.css'; 
 import Validation from '../function/addValidation'
 
-import { Upload, message } from 'antd';
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-
 import axios from 'axios'
 import { useState } from 'react'
 
@@ -20,80 +17,51 @@ const StudentAdd = () => {
     pic: ""
   });
 
+  const [file, setFile] = useState(null);
+
   const navigate = useNavigate();
 
   const handleInput = (event) => {        
     setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   }
 
-  const handleSubmit = (event) => {        
-    event.preventDefault();        
-    const err = Validation(values);        
-    if(err.firstName === "" && err.lastName === "" && err.studentId === "" && err.birthDate === "" && err.gender === "") {      
-      console.log(values)
-      axios.post('http://localhost:3001/studentadd', values)
-      .then(res => {    
-        alert("Add Success")
-        navigate('/student');            
-      })            
-      .catch(err => {
-        console.error(err);
-        alert(err.response.data)
-      })      
-    }    
-  }
-
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('Image must smaller than 2MB!');
-    }
-    return isJpgOrPng && isLt2M;
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
   };
 
-  const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState();
-  const handleChange = (info) => {
-  if (info.file.status === 'uploading') {
-    setLoading(true);
-    return;
-  }
-  if (info.file.status === 'done') {
-    // Get this url from response in real world.
-    getBase64(info.file.originFileObj, (url) => {
-    setLoading(false);
-    setImageUrl(url);
-  });
-  }
-};
-const uploadButton = (
-  <button
-    style={{
-      border: 0,
-      background: 'none',
-    }}
-    type="button"
-  >
-    {loading ? <LoadingOutlined /> : <PlusOutlined />}
-    <div
-      style={{
-        marginTop: 8,
-      }}
-    >
-      Upload
-    </div>
-  </button>
-);
-const getBase64 = (img, callback) => {
-  const reader = new FileReader();
-  reader.addEventListener('load', () => callback(reader.result));
-  reader.readAsDataURL(img);
-};
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
+    const validationErrors = Validation(values);
+
+    if (validationErrors.firstName === "" && validationErrors.lastName === "" && validationErrors.studentId === "" && validationErrors.birthDate === "" && validationErrors.gender === "") {
+      // Validation passed, proceed with form submission
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('firstName', values.firstName);
+      formData.append('lastName', values.lastName);
+      formData.append('studentId', values.studentId);
+      formData.append('birthDate', values.birthDate);
+      formData.append('gender', values.gender);
+
+      axios
+        .post('http://localhost:3001/studentadd', formData)
+        .then((res) => {
+          alert('Add Success');
+          navigate('/student');
+        })
+        .catch((err) => {
+          console.error(err);
+          alert(err.response.data);
+        });
+    } else {
+      // Validation failed, handle errors (e.g., display error messages)
+      console.log("Validation failed:", validationErrors);
+      // You can handle the errors as needed, e.g., display error messages to the user
+    }
+  };
+  
   return (
     <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
       <div className="flex flex-col w-full h-fit my-10 px-24 justify-start">
@@ -113,23 +81,7 @@ const getBase64 = (img, callback) => {
               <input type="text" name='gender' placeholder="เพศ" onChange={handleInput} className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'/>
           </div>
           <div className="text-center justify-center pt-10">
-            <Upload 
-              name="avatar"
-              listType="picture-card"
-              className="avatar-uploader"
-              showUploadList={false}
-              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-              beforeUpload={beforeUpload}
-              onChange={handleChange}
-              id='Upload-box'
-            >
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt="avatar"
-                  style={{width: '100%',}}/>)
-                : (uploadButton)}
-            </Upload>
+          <input type="file" name="file" onChange={handleFileChange} />
           </div>
           <div className="flex m-6 items-center justify-center">
             <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]' type="button" onClick={handleSubmit}>Add</button>

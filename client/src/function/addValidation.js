@@ -1,44 +1,45 @@
-import check from "lodash";
+import _ from "lodash";
 
 function addValidation(values) {
+    let errors = {};
 
-    let error = {}
-
-    if (values.firstName === "") {
-        error.firstName = "First name should not be empty"
+    if (_.isEmpty(values.firstName)) {
+        errors.firstName = "First name should not be empty";
     } else {
-        error.firstName = ""
+        errors.firstName = "";
     }
 
-    if (values.lastName === "") {
-        error.lastName = "Last name should not be empty"
+    if (_.isEmpty(values.lastName)) {
+        errors.lastName = "Last name should not be empty";
     } else {
-        error.lastName = ""
+        errors.lastName = "";
     }
 
-    if (values.studentId === "") {
-        error.studentId = "Student ID should not be empty"
+    if (_.isEmpty(values.studentId)) {
+        errors.studentId = "Student ID should not be empty";
     } else {
-        error.studentId = ""
+        errors.studentId = "";
     }
 
-    if (values.birthDate === "") {
-        error.birthDate = "Birth date should not be empty"
+    if (_.isEmpty(values.birthDate)) {
+        errors.birthDate = "Birth date should not be empty";
     } else {
-        error.birthDate = ""
+        errors.birthDate = "";
     }
 
-    if (values.gender === "") {
-        error.gender = "Gender should not be empty"
+    if (_.isEmpty(values.gender)) {
+        errors.gender = "Gender should not be empty";
     } else {
-        error.gender = ""
+        errors.gender = "";
     }
 
-    if (values.pic ==="") {
-        error.pic = "Picture should not be empty"
+    if (!values.pic) {
+        errors.pic = "Picture should not be empty";
+    } else {
+        errors.pic = "";
     }
 
-    return error;
+    return errors;
 }
 
 export default addValidation;
