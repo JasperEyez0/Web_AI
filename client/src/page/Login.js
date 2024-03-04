@@ -7,10 +7,6 @@ import Validation from '../function/loginValidation'
 //Redux
 import { useDispatch } from 'react-redux';
 
-const re = () => {
-  window.location.reload(false);
-} 
-
 const Login = () => {
 
   const dispatch = useDispatch()
@@ -35,7 +31,8 @@ const Login = () => {
       axios.post('http://localhost:3001/login', values)
       .then(res => {                
         if(res.data.errors) {                    
-          setBackendError(res.data.errors);                
+          setBackendError(res.data.errors);
+          console.log(backendError)
         } else {                    
           setBackendError([]);                    
           if(res.data.token) {   
@@ -49,7 +46,7 @@ const Login = () => {
               }})  
             localStorage.setItem('token', res.data.token)
             
-            navigate('/');  //re();
+            navigate('/');
             return                  
           } else {                    
             alert("No record existed");    

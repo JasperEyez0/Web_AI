@@ -9,7 +9,14 @@ const jsonParser = bodyParser.json()
 const jwt = require('jsonwebtoken')
 const secret = 'AI-Project'
 
-app.use(cors());
+const corsOptions = {
+    origin: 'http://localhost:3000', // หรือที่ตั้ง React app ของคุณ
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+};
+  
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const c = require('lodash')
