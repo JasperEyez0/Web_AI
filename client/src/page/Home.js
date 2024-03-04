@@ -19,7 +19,7 @@ function Home() {
         );
         if (foundProfessor) {
           setPList(foundProfessor);
-          console.log(foundProfessor);
+          //console.log(foundProfessor);
         } else {
           console.log(`No data found for username: ${user.username}`);
         }

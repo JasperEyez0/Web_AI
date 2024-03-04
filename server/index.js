@@ -133,12 +133,33 @@ app.post('/studentadd', upload.single('file'), jsonParser, function(req, res, ne
                 }
 
                 const updatedPicPath = path.join('student_folders', studentId);
-                db.execute('INSERT INTO student (s_id, s_name, s_sname, dateofbirth, gender, pic) VALUES (?, ?, ?, ?, ?, ?)', [studentId, firstName, lastName, birthDate, gender, updatedPicPath], function(err, results, fields) {
-                    if (err) {
-                        return res.status(500).json({ status: 'error', message: 'Failed to update database.' });
-                    }
-                    res.json({ status: 'ok' });
-                });
+                
+                // Multer จะเพิ่ม property `file` ใน `req` ซึ่งจะมีข้อมูลเกี่ยวกับไฟล์ที่อัปโหลด
+                const uploadedFile = req.file;
+                
+                // ตรวจสอบว่าไฟล์ถูกอัปโหลดหรือไม่
+                if (uploadedFile) {
+                    // ระบุ path ที่ไฟล์จะถูกบันทึก
+                    const filePath = path.join(folderPath, uploadedFile.originalname);
+                    
+                    // ย้ายไฟล์ไปยังโฟลเดอร์ปลายทาง
+                    fs.rename(uploadedFile.path, filePath, (err) => {
+                        if (err) {
+                            return res.status(500).json({ status: 'error', message: 'Failed to save file.' });
+                        }
+
+                        // ทำตามขั้นตอนที่เหลือในการเพิ่มข้อมูลลงในฐานข้อมูล
+                        db.execute('INSERT INTO student (s_id, s_name, s_sname, dateofbirth, gender, pic) VALUES (?, ?, ?, ?, ?, ?)', [studentId, firstName, lastName, birthDate, gender, updatedPicPath], function(err, results, fields) {
+                            if (err) {
+                                return res.status(500).json({ status: 'error', message: 'Failed to update database.' });
+                            }
+                            res.json({ status: 'ok' });
+                        });
+                    });
+                } else {
+                    // ถ้าไม่มีไฟล์ถูกอัปโหลด
+                    res.status(400).json({ status: 'error', message: 'File not uploaded.' });
+                }
             });
 
             return;
