@@ -10,6 +10,9 @@ import { useDispatch } from 'react-redux';
 const Login = () => {
 
   const dispatch = useDispatch()
+  const re = () => {
+    window.location.reload(false);
+  } 
 
   const [values, setValues] = useState({        
     username: '',        
@@ -41,12 +44,12 @@ const Login = () => {
               type:'LOGIN',
               payload: {
                 token: res.data.token,
-                username: res.data.payload.professor.username,
-                password: res.data.payload.professor.password
+                username: res.data.payload.professor.username
               }})  
             localStorage.setItem('token', res.data.token)
+            localStorage.setItem('username', res.data.payload.professor.username)
             
-            navigate('/');
+            navigate('/');   re();
             return                  
           } else {                    
             alert("No record existed");    

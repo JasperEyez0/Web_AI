@@ -3,6 +3,10 @@ import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const Report = () => {
+
+  //const token = localStorage.getItem('token');
+  //console.log(token)
+
   const [src, setSrc] = useState(null);
   const [crop, setCrop] = useState({ aspect: 16 / 9 });
   const [image, setImage] = useState(null);

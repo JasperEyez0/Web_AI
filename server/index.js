@@ -175,6 +175,32 @@ app.post('/studentadd', upload.single('file'), jsonParser, function(req, res, ne
     });
 });
 
+app.post('/studentadd/:studentId', upload.single('file'), function(req, res) {
+    const studentId = req.params.studentId;
+
+    const folderPath = path.join(__dirname, 'student_folders', studentId);
+
+    // Create the student_folders/s_id directory if it doesn't exist
+    fs.mkdirSync(folderPath, { recursive: true });
+
+    const uploadedFile = req.file;
+
+    if (uploadedFile) {
+
+        const timestamp = new Date().getTime();
+        const uniqueFilename = `${timestamp}_${uploadedFile.originalname}`;
+        const filePath = path.join(folderPath, uniqueFilename);
+
+        // Move the file from the temporary storage to the desired folder
+        fs.renameSync(uploadedFile.path, filePath);
+
+        // Continue with the rest of the database update process if needed
+        res.json({ status: 'ok' });
+    } else {
+        res.status(400).json({ status: 'error', message: 'File not uploaded.' });
+    }
+});
+
 app.get('/student', (req, res) => {
     const searchQuery = req.query.search || ''; // ดึงคำค้นหาจาก query parameters
 
@@ -219,23 +245,18 @@ app.get('/student/:studentId', (req, res) => {
     });
 });
 
-app.put('/student/:studentId', (req, res) => {
+app.put('/student/:studentId', async (req, res) => {
     const studentId = req.params.studentId;
     const updatedStudent = req.body;
-  
-    db.query(
-      'UPDATE student SET ? WHERE s_id = ?',
-      [updatedStudent, studentId],
-      (err, result) => {
-        if (err) {
-          console.log('Error updating student:', err);
-          res.status(500).json({ error: 'Internal Server Error' });
-        } else {
-          console.log('Student updated successfully');
-          res.status(200).json({ success: true });
-        }
-      }
-    );
+
+    try {
+        const result = await db.query('UPDATE student SET ? WHERE s_id = ?', [updatedStudent, studentId]);
+        console.log('Student updated successfully');
+        res.status(200).json(updatedStudent);  // ส่งข้อมูลที่ถูกอัปเดตกลับ
+    } catch (err) {
+        console.log('Error updating student:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 app.delete('/student/:studentId', (req, res) => {

@@ -6,6 +6,10 @@ import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const StudentAdd = () => {
+
+  //const token = localStorage.getItem('token');
+  //console.log(token)
+
   const [values, setValues] = useState({
     firstName: '',
     lastName: '',

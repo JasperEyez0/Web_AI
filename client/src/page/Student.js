@@ -10,6 +10,9 @@ import { useState, useEffect, useCallback } from 'react'
 
 const Student = () => {
 
+    //const token = localStorage.getItem('token');
+    //console.log(token)
+
     const [sList,setsList] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
 

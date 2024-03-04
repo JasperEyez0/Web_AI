@@ -3,12 +3,23 @@ import '../page/StudentEdit.css';
 
 import Axios from 'axios'
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import moment from 'moment-timezone';
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 const StudentEdit = () => {
 
+  //const token = localStorage.getItem('token');
+  //console.log(token)
+
   const { studentId } = useParams();
+  const [file, setFile] = useState(null);
+  const [src, setSrc] = useState(null);
+  const [crop, setCrop] = useState();
+  const [image, setImage] = useState(null);
+  const [output, setOutput] = useState(null);
+  const navigate = useNavigate();
 
   const [student, setStudent] = useState({
     s_name: '',
@@ -16,9 +27,41 @@ const StudentEdit = () => {
     s_id: studentId,
     dateofbirth: '',
     gender: '',
-    pic: '',
   });
+  
+  const cropImageNow = () => {
+    if (image) {  // Ensure image is not null before proceeding
+      const canvas = document.createElement('canvas');
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const ctx = canvas.getContext('2d');
 
+      const pixelRatio = window.devicePixelRatio;
+      canvas.width = crop.width * pixelRatio;
+      canvas.height = crop.height * pixelRatio;
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      ctx.imageSmoothingQuality = 'high';
+
+      ctx.drawImage(
+        image,
+        crop.x * scaleX,
+        crop.y * scaleY,
+        crop.width * scaleX,
+        crop.height * scaleY,
+        0,
+        0,
+        crop.width,
+        crop.height
+      );
+
+      // Converting to base64
+      const base64Image = canvas.toDataURL('image/jpeg');
+      setOutput(base64Image);
+    }
+  };
+  
   const fetchSData = useCallback(() => {
     if (studentId) {
       Axios.get(`http://localhost:3001/student/${studentId}`)
@@ -34,7 +77,7 @@ const StudentEdit = () => {
         });
     }
   }, [studentId]);
-
+  
   useEffect(() => {
     fetchSData();
   }, [fetchSData, studentId]);
@@ -43,12 +86,64 @@ const StudentEdit = () => {
     Axios.put(`http://localhost:3001/student/${studentId}`, student)
       .then((res) => {
         console.log('Student updated successfully:', res.data);
-        // You may want to redirect the user or perform other actions upon successful update
+        alert('Edit Success');
+        navigate('/student');
       })
       .catch((err) => {
         console.log('Error updating student:', err);
       });
   };
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
+    selectImage(selectedFile);
+  };
+
+  const selectImage = (file) => {
+    setSrc(URL.createObjectURL(file));
+  };
+
+  const onImageLoaded = useCallback((img) => {
+    setImage(img);
+    setCrop({ aspect: 1 / 1, unit: 'px', width: 100, height: 100 });
+  }, []);
+  
+  function base64ToBlob(base64String) {
+    const byteCharacters = atob(base64String.split(',')[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+  
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+  
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: 'image/jpeg' });
+  }
+
+  const handleCropChange = (newCrop) => {
+    setCrop(newCrop); // เรียก setCrop เพื่ออัปเดตค่า crop
+    cropImageNow();    // เรียก cropImageNow เพื่อทำการ crop ภาพ
+  };
+
+  const handleAddImg = () => {
+    const formData = new FormData();
+
+    if (output) {
+        const blob = base64ToBlob(output);
+        formData.append('file', blob, 'cropped_image_edit.jpeg');
+    } else {
+        formData.append('file', file);
+    }
+
+    Axios.post(`http://localhost:3001/studentadd/${studentId}`, formData)
+        .then((res) => {
+            console.log('Image added successfully:', res.data);
+        })
+        .catch((err) => {
+            console.log('Error adding image:', err);
+        });
+};
   
   return (
     <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
@@ -109,12 +204,31 @@ const StudentEdit = () => {
               onChange={(e) => setStudent({ ...student, gender: e.target.value })}
             />
           </div>
-          <div className="flex justify-center pt-10">
-            <input type="file" name="file" className='flex items-center justify-center'/>
+          <div className="flex m-6 items-center justify-center">
+            <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]'  onClick={handleUpdate}>Edit</button>
           </div>
         </form>
-        <div className="flex m-6 items-center justify-center">
-          <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]'  onClick={handleUpdate}>Edit</button>
+        <div className="flex justify-center pt-10">
+          <form>
+            <input
+              type="file"
+              name="file"
+              onChange={handleFileChange}
+              className='flex items-center justify-center'
+            />
+            {/* Crop section */}
+            {src && (
+              <div className='flex flex-col justify-center items-center'>
+                <ReactCrop
+                  src={src}
+                  onImageLoaded={onImageLoaded}
+                  crop={crop}
+                  onChange={handleCropChange}
+                />
+              </div>
+            )}
+            <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]' onClick={handleAddImg}>Add Image</button>
+          </form>
         </div>
       </div>
     </div>

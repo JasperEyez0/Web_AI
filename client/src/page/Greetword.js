@@ -6,6 +6,9 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 
 function Greetword () {
 
+  //const token = localStorage.getItem('token');
+  //console.log(token)
+
   const [greetData, setGreetData] = useState([]);
   const [newGreet, setNewGreet] = useState({ greeting: '', feeling: '' });
 
@@ -102,7 +105,7 @@ function Greetword () {
             <tr>
               <th className="py-4">คำทักทาย</th>
               <th className="py-4">ความรู้สึก</th>
-              <th className="py-4"></th>
+              <th className="py-4"> </th>
             </tr>
           </thead>
           <tbody>
