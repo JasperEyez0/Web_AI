@@ -146,7 +146,7 @@ const StudentEdit = () => {
 };
   
   return (
-    <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
+    <div className="flex flex-col w-auto h-fit min-h-screen bg-[#E1F7FF]">
       <div className="flex flex-col w-full h-fit my-10 px-24 justify-start">
         <div className="flex flex-row w-full justify-around">
             <p className='min-w-[150px] px-2.5 py-[2px]'>ชื่อ</p>
@@ -208,17 +208,17 @@ const StudentEdit = () => {
             <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]'  onClick={handleUpdate}>Edit</button>
           </div>
         </form>
-        <div className="flex justify-center pt-10">
-          <form>
+        <div className="flex pt-10">
+          <form className='flex flex-col w-full justify-center items-center'>
             <input
               type="file"
               name="file"
               onChange={handleFileChange}
-              className='flex items-center justify-center'
+              className='flex items-center justify-center pb-10'
             />
             {/* Crop section */}
             {src && (
-              <div className='flex flex-col justify-center items-center'>
+              <div className='flex flex-col justify-center items-center pb-10'>
                 <ReactCrop
                   src={src}
                   onImageLoaded={onImageLoaded}

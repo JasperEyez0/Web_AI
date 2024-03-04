@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import ReactCrop from 'react-image-crop';
+import React from 'react';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const Report = () => {

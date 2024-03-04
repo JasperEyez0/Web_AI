@@ -4,8 +4,6 @@ import logo from "../assests/img/logo.svg"
 
 import Axios from 'axios'
 import { useState, useEffect, useCallback } from 'react'
-import {useSelector} from "react-redux"
-
 
 function Home () {
 
@@ -14,7 +12,6 @@ function Home () {
   //localStorage.removeItem('token')
 
   const [pList, setPList] = useState([]);
-  const { user } = useSelector((state)=> ({...state}))
   const username = localStorage.getItem('username')
 
   const fetchP = useCallback(() => {
