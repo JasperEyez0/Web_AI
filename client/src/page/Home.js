@@ -28,7 +28,7 @@ function Home () {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     if(username !== null) {

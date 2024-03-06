@@ -12,6 +12,7 @@ import Student from './page/Student';
 import StudentAdd from './page/StudentAdd';
 import StudentEdit from './page/StudentEdit';
 import Report from './page/Report';
+import ReportImgS from './page/ReportImgS';
 
 
 import { Provider } from "react-redux"
@@ -30,6 +31,7 @@ const router = createBrowserRouter(createRoutesFromElements(
       <Route path='/studentadd' element={<StudentAdd/>}/>
       <Route path='/studentedit/:studentId' element={<StudentEdit />} />
       <Route path='/report' element ={<Report/>}/>
+      <Route path='/reportimgs' element ={<ReportImgS/>}/>
     </Route>
   ))
 

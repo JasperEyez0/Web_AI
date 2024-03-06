@@ -2,25 +2,26 @@ import React from 'react';
 import { NavLink } from 'react-router-dom'
 import { IoIosSearch } from "react-icons/io";
 import { IoImage } from "react-icons/io5";
-import { FaUserEdit } from "react-icons/fa";
-import { RiDeleteBin5Fill } from "react-icons/ri";
 import { GoTriangleLeft, GoTriangleRight } from "react-icons/go";
 import { BiSolidFileExport } from "react-icons/bi";
 
 import Axios from 'axios'
 import { useState, useEffect, useCallback } from 'react'
+import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-const Report = () => {
+const ReportImgS = () => {
 
-  //const token = localStorage.getItem('token');
-  //console.log(token)
-
-  const [sList,setsList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategoryPopup, setShowCategoryPopup] = useState(false);
   const [triangleIcon, setTriangleIcon] = useState(<GoTriangleLeft />);
   const [selectedCount, setSelectedCount] = useState(0);
+
+  const [file, setFile] = useState(null);
+  const [src, setSrc] = useState(null);
+  const [crop, setCrop] = useState();
+  const [image, setImage] = useState(null);
+  const [output, setOutput] = useState(null);
 
   const [selectedCategories, setSelectedCategories] = useState({
     all: false,
@@ -94,47 +95,81 @@ const Report = () => {
     
   }, [selectedCategories]);
 
-  const fetchS = useCallback(() => {
-    Axios.get(`http://localhost:3001/student`, {
-      params: { search: searchQuery } // ส่งคำค้นหาไปยังเซิร์ฟเวอร์
-    })
-      .then((res) => {
-        setsList(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [searchQuery]);
-
-  useEffect(() => {
-    fetchS();
-  }, [fetchS]);
-
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchS();
   };
 
-  const handleDelete = (studentId) => {
-    if (window.confirm('คุณต้องการลบข้อมูลนักศึกษานี้หรือไม่?')) {
-      Axios.delete(`http://localhost:3001/student/${studentId}`)
-        .then((res) => {
-          console.log('Student deleted successfully:', res.data);
-          // ทำการ redirect หรือทำอย่างอื่นตามต้องการ
-          fetchS();  // เพื่อรีเฟรชข้อมูลหลังจากลบ
-        })
-        .catch((err) => {
-          console.log('Error deleting student:', err);
-        });
+  const cropImageNow = () => {
+    if (image) {  // Ensure image is not null before proceeding
+      const canvas = document.createElement('canvas');
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const ctx = canvas.getContext('2d');
+
+      const pixelRatio = window.devicePixelRatio;
+      canvas.width = crop.width * pixelRatio;
+      canvas.height = crop.height * pixelRatio;
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      ctx.imageSmoothingQuality = 'high';
+
+      ctx.drawImage(
+        image,
+        crop.x * scaleX,
+        crop.y * scaleY,
+        crop.width * scaleX,
+        crop.height * scaleY,
+        0,
+        0,
+        crop.width,
+        crop.height
+      );
+
+      // Converting to base64
+      const base64Image = canvas.toDataURL('image/jpeg');
+      setOutput(base64Image);
     }
+  };
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
+    selectImage(selectedFile);
+  };
+
+  const selectImage = (file) => {
+    setSrc(URL.createObjectURL(file));
+  };
+
+  const onImageLoaded = useCallback((img) => {
+    setImage(img);
+    setCrop({ aspect: 1 / 1, unit: 'px', width: 100, height: 100 });
+  }, []);
+
+  function base64ToBlob(base64String) {
+    const byteCharacters = atob(base64String.split(',')[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+  
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+  
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: 'image/jpeg' });
   }
+
+  const handleCropChange = (newCrop) => {
+    setCrop(newCrop); // เรียก setCrop เพื่ออัปเดตค่า crop
+    cropImageNow();    // เรียก cropImageNow เพื่อทำการ crop ภาพ
+  };
   
   return (
-    <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
+    <div className="flex flex-col w-auto h-fit min-h-screen bg-[#E1F7FF]">
 
       {/* Body Header */}
       <div className="flex flex-row w-full h-fit my-10 px-24 justify-start">
@@ -153,7 +188,7 @@ const Report = () => {
           </div>
         </form>
 
-        {/* Button next to searchbar */}
+        {/* Button next to searchbar & Popup*/}
         <div className="flex ml-6 w-fit items-center justify-evenly relative">
           <NavLink  to={"/reportimgs"} className="p-2 bg-sky-800 text-[#fff] rounded text-[20px] mr-6"><IoImage /></NavLink>
           <button onClick={handleCategoryClick} className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center mr-6">Category {triangleIcon}</button>
@@ -252,49 +287,32 @@ const Report = () => {
       </div>
 
       {/* Body Center (Show data) */}
-      <div className="flex flex-row w-full h-fit px-24">
-        <table className='w-full table-auto text-left'>
-          <thead>
-            <tr>
-              <th className='py-4 pl-[10px]'>ชื่อ-สกุล</th>
-              <th className='py-4'>รหัสนศ.</th>
-              <th className='py-4'>วันเกิด</th>
-              <th className='py-4'>เพศ</th>
-              <th className='py-4'>รูป</th>
-            </tr>
-          </thead>
-          <tbody>
-          {sList.map((student, index) => {
-            // Check if the student's name, surname, or id contains the search query
-            const nameMatches = student.s_name.toLowerCase().includes(searchQuery.toLowerCase());
-            const surnameMatches = student.s_sname.toLowerCase().includes(searchQuery.toLowerCase());
-            const idMatches = student.s_id.toString().toLowerCase().includes(searchQuery.toLowerCase());
-
-            // Display the row only if name, surname, or id matches the search query
-            if (nameMatches || surnameMatches || idMatches) {
-              return (
-                <tr key={index} className='border-collapse border border-slate-300 h-[32px] bg-white'>
-                  <th className='pl-[10px]'>{student.s_name} {student.s_sname}</th>
-                  <th>{student.s_id}</th>
-                  <th>{student.dateofbirth ? new Date(student.dateofbirth).toLocaleDateString() : ""}</th>
-                  <th>{student.gender}</th>
-                  <th>{student.pic}</th>
-                  <th>
-                    <div className="flex items-center justify-around">
-                      <NavLink to={`/studentedit/${student.s_id}`} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
-                      <button onClick={() => handleDelete(student.s_id)} className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'><RiDeleteBin5Fill /></button>
-                    </div>
-                  </th>
-                </tr>
-              );
-            }
-            return null; // If no match, return null (no table row)
-          })}
-          </tbody>
-        </table>
+      <div className="flex flex-col w-full h-fit my-10 px-24 justify-start">
+        <div className="flex pt-10">
+            <form className='flex flex-col w-full justify-center items-center'>
+              <input
+                type="file"
+                name="file"
+                onChange={handleFileChange}
+                className='flex items-center justify-center pb-10'
+              />
+              {/* Crop section */}
+              {src && (
+                <div className='flex flex-col justify-center items-center pb-10'>
+                  <ReactCrop
+                    src={src}
+                    onImageLoaded={onImageLoaded}
+                    crop={crop}
+                    onChange={handleCropChange}
+                  />
+                </div>
+              )}
+              <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]'>Search Image</button>
+            </form>
+          </div>
       </div>
     </div>
   );
 };
 
-export default Report;
+export default ReportImgS;
