@@ -1,10 +1,11 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
-import {RiUserLine} from "react-icons/ri"
+import { NavLink, useLocation } from 'react-router-dom'
+import {RiUserLine } from "react-icons/ri"
 import logo from "../assests/img/logo.svg"
 
 const Header = () => {
   const token = localStorage.getItem('token');
+  const location = useLocation();
 
   return (
     <>
@@ -18,7 +19,15 @@ const Header = () => {
         <nav className='flex gap-10 lg:gap-16 ms-auto '>
             {token && (<>
               <NavLink to={"greetword"} className={({ isActive }) => `flex items-center text-[16px] w-auto text-center px-3 pt-1 pb-2 rounded-[50px] ${isActive ? "text-[#fff] font-bold bg-sky-800" : ""} `}>Greet Word</NavLink>
-              <NavLink to={"student"} className={({ isActive }) => `flex items-center text-[16px] w-auto text-center px-3 pt-1 pb-2 rounded-[50px] ${isActive ? "text-[#fff] font-bold bg-sky-800" : ""} `}>Student</NavLink>
+              <NavLink
+                to={'student'}
+                className={`
+                  flex items-center text-[16px] w-auto text-center px-3 pt-1 pb-2 rounded-[50px]
+                  ${location.pathname === '/student' || location.pathname.includes('/studentadd') ? 'text-[#fff] font-bold bg-sky-800' : ''}
+                `}
+              >
+                Student
+              </NavLink>
               <NavLink to={"report"} className={({ isActive }) => `flex items-center text-[16px] w-auto text-center px-3 pt-1 pb-2 rounded-[50px] ${isActive ? "text-[#fff] font-bold bg-sky-800" : ""} `}>Report</NavLink>
             </>)}
         </nav>
