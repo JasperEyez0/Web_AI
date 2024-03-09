@@ -16,7 +16,10 @@ const StudentEdit = () => {
   const { studentId } = useParams();
   const [file, setFile] = useState(null);
   const [src, setSrc] = useState(null);
-  const [crop, setCrop] = useState();
+  const [crop, setCrop] = useState({
+    width: 200,
+    height: 200,
+  });
   const [image, setImage] = useState(null);
   const [output, setOutput] = useState(null);
   const navigate = useNavigate();

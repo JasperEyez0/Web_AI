@@ -288,9 +288,9 @@ app.get('/greetword', (req, res) => {
 });
 
 app.post('/greetword', (req, res) => {
-    const { feeling, greeting } = req.body;
+    const { greeting, g_category } = req.body;
 
-    db.query("INSERT INTO greetword (feel, greeting) VALUES (?, ?)", [feeling, greeting], (err, result) => {
+    db.query("INSERT INTO greetword (greeting, g_category) VALUES (?, ?)", [greeting, g_category], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ message: 'Internal Server Error' });
@@ -316,6 +316,7 @@ app.delete('/greetword/:greeting', (req, res) => {
         }
     });
 });
+
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
