@@ -2,8 +2,6 @@ import React from 'react';
 import { NavLink } from 'react-router-dom'
 import { IoIosSearch } from "react-icons/io";
 import { IoImage } from "react-icons/io5";
-import { FaUserEdit } from "react-icons/fa";
-import { RiDeleteBin5Fill } from "react-icons/ri";
 import { GoTriangleLeft, GoTriangleRight } from "react-icons/go";
 import { BiSolidFileExport } from "react-icons/bi";
 
@@ -16,41 +14,46 @@ const Report = () => {
   //const token = localStorage.getItem('token');
   //console.log(token)
 
-  const [sList,setsList] = useState([]);
+  const [report, setReport] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategoryPopup, setShowCategoryPopup] = useState(false);
   const [triangleIcon, setTriangleIcon] = useState(<GoTriangleLeft />);
   const [selectedCount, setSelectedCount] = useState(0);
 
   const [selectedCategories, setSelectedCategories] = useState({
-    all: false,
-    studentId: false,
-    name: false,
-    age: false,
-    mood: false,
-    datetime: false,
-    gender: false,
-    img: false,
-    fimg: false
+    all: true,
+    studentId: true,
+    name: true,
+    age: true,
+    mood: true,
+    datetime: true,
+    gender: true,
+    img: true,
+    fimg: true
   });
 
   const handleCategoryClick = () => {
     setShowCategoryPopup(!showCategoryPopup);
-    if (!showCategoryPopup) {
-      // รีเซ็ตสถานะ checkbox เมื่อปิด category-popup
-      setSelectedCategories({
-        all: false,
-        studentId: false,
-        name: false,
-        age: false,
-        mood: false,
-        datetime: false,
-        gender: false,
-        img: false,
-        fimg: false
-      });
+
+    // ถ้าปิด Category Popup และ selectedCategories ยังไม่ถูกเลือกทั้งหมด
+    if (!showCategoryPopup && !isAllCategoriesSelected()) {
+      // ไม่ทำการ reset ค่า selectedCategories
+      setTriangleIcon(showCategoryPopup ? <GoTriangleLeft /> : <GoTriangleRight />);
+      return;
     }
+
+    // ถ้าปิด Category Popup และ selectedCategories ถูกเลือกทั้งหมด
+    if (!showCategoryPopup && isAllCategoriesSelected()) {
+      // ไม่ทำการ reset ค่า selectedCategories
+      setTriangleIcon(showCategoryPopup ? <GoTriangleLeft /> : <GoTriangleRight />);
+      return;
+    }
+
     setTriangleIcon(showCategoryPopup ? <GoTriangleLeft /> : <GoTriangleRight />);
+  };
+
+  const isAllCategoriesSelected = () => {
+    return Object.values(selectedCategories).every((value) => value === true);
   };
 
   const handleSelect = (category) => {
@@ -94,21 +97,25 @@ const Report = () => {
     
   }, [selectedCategories]);
 
-  const fetchS = useCallback(() => {
-    Axios.get(`http://localhost:3001/student`, {
-      params: { search: searchQuery } // ส่งคำค้นหาไปยังเซิร์ฟเวอร์
-    })
-      .then((res) => {
-        setsList(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  useEffect(() => {
+    fetchReport();
+    console.log(report); // ตรวจสอบค่าทั้งหมดที่ได้จากการ fetch
   }, [searchQuery]);
 
-  useEffect(() => {
-    fetchS();
-  }, [fetchS]);
+  const fetchReport = async () => {
+    console.log(searchQuery)
+    try {
+  
+      // ส่งค่าไปยังเซิร์ฟเวอร์
+      const res = await Axios.get('http://localhost:3001/report', {
+        params: { search: searchQuery } // ส่งคำค้นหาไปยังเซิร์ฟเวอร์
+      });
+  
+      setReport(res.data);
+    } catch (error) {
+      console.error('Error fetching report:', error);
+    }
+  };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -116,23 +123,26 @@ const Report = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchS();
+    fetchReport();
   };
 
-  const handleDelete = (studentId) => {
-    if (window.confirm('คุณต้องการลบข้อมูลนักศึกษานี้หรือไม่?')) {
-      Axios.delete(`http://localhost:3001/student/${studentId}`)
-        .then((res) => {
-          console.log('Student deleted successfully:', res.data);
-          // ทำการ redirect หรือทำอย่างอื่นตามต้องการ
-          fetchS();  // เพื่อรีเฟรชข้อมูลหลังจากลบ
-        })
-        .catch((err) => {
-          console.log('Error deleting student:', err);
-        });
-    }
-  }
+  function calculateAge(dateOfBirth) {
+    if (dateOfBirth) {
+      const today = new Date();
+      const birthDate = new Date(dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
   
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+  
+      return age;
+    }
+  
+    return null; // หรือค่าที่ต้องการสำหรับข้อมูลที่ไม่สามารถคำนวณอายุได้
+  }
+
   return (
     <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
 
@@ -256,40 +266,61 @@ const Report = () => {
         <table className='w-full table-auto text-left'>
           <thead>
             <tr>
-              <th className='py-4 pl-[10px]'>ชื่อ-สกุล</th>
-              <th className='py-4'>รหัสนศ.</th>
-              <th className='py-4'>วันเกิด</th>
-              <th className='py-4'>เพศ</th>
-              <th className='py-4'>รูป</th>
+              <th className='py-4'>
+                {selectedCategories.studentId && <span>รหัสนศ.</span>}
+              </th>
+              <th className='py-4 pl-[10px]'>
+                {selectedCategories.name && <span>ชื่อ-สกุล</span>}
+              </th>
+              <th className='py-4'>
+                {selectedCategories.age && <span>อายุ</span>}
+              </th>
+              <th className='py-4'>
+                {selectedCategories.mood && <span>อารมณ์</span>}
+              </th>
+              <th className='py-4'>
+                {selectedCategories.datetime && <span>วันเวลา</span>}
+              </th>
+              <th className='py-4'>
+                {selectedCategories.gender && <span>เพศ</span>}
+              </th>
+              <th className='py-4'>
+                {selectedCategories.img && <span>รูป</span>}
+              </th>
+              <th className='py-4'>
+                {selectedCategories.fimg && <span>รูปใหญ่</span>}
+              </th>
             </tr>
           </thead>
           <tbody>
-          {sList.map((student, index) => {
-            // Check if the student's name, surname, or id contains the search query
-            const nameMatches = student.s_name.toLowerCase().includes(searchQuery.toLowerCase());
-            const surnameMatches = student.s_sname.toLowerCase().includes(searchQuery.toLowerCase());
-            const idMatches = student.s_id.toString().toLowerCase().includes(searchQuery.toLowerCase());
-
-            // Display the row only if name, surname, or id matches the search query
-            if (nameMatches || surnameMatches || idMatches) {
-              return (
-                <tr key={index} className='border-collapse border border-slate-300 h-[32px] bg-white'>
-                  <th className='pl-[10px]'>{student.s_name} {student.s_sname}</th>
-                  <th>{student.s_id}</th>
-                  <th>{student.dateofbirth ? new Date(student.dateofbirth).toLocaleDateString() : ""}</th>
-                  <th>{student.gender}</th>
-                  <th>{student.pic}</th>
-                  <th>
-                    <div className="flex items-center justify-around">
-                      <NavLink to={`/studentedit/${student.s_id}`} className="p-2 bg-sky-800 text-[#fff] rounded-xl text-[18px]"><FaUserEdit /></NavLink>
-                      <button onClick={() => handleDelete(student.s_id)} className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'><RiDeleteBin5Fill /></button>
-                    </div>
-                  </th>
-                </tr>
-              );
-            }
-            return null; // If no match, return null (no table row)
-          })}
+            {report.map((data, index) => (
+              <tr key={index} className='border-collapse border border-slate-300 h-[32px] bg-white'>
+                <td>
+                  {selectedCategories.studentId && <span>{data.s_id}</span>}
+                </td>
+                <td>
+                  {selectedCategories.name && <span>{data.s_name} {data.s_sname}</span>}
+                </td>
+                <td>
+                  {selectedCategories.age && <span>{calculateAge(data.dateofbirth)}</span>}
+                </td>
+                <td>
+                  {selectedCategories.mood && <span>{data.mood}</span>}
+                </td>
+                <td>
+                  {selectedCategories.datetime && <span>{data.date}</span>}
+                </td>
+                <td>
+                  {selectedCategories.gender && <span>{data.gender}</span>}
+                </td>
+                <td>
+                  {selectedCategories.img && <span>{data.pic_r}</span>}
+                </td>
+                <td>
+                  {selectedCategories.fimg && <span>{data.pic_cam}</span>}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
