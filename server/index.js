@@ -317,6 +317,36 @@ app.delete('/greetword/:greeting', (req, res) => {
     });
 });
 
+app.get('/report', (req, res) => {
+    const searchQuery = req.query.search || '';
+
+    let query = `
+        SELECT report.*, student.*
+        FROM student
+        LEFT JOIN report ON student.s_id = report.s_id
+    `;
+
+    if (searchQuery) {
+        query += ` WHERE report.s_id LIKE '%${searchQuery}%' OR student.s_name LIKE '%${searchQuery}%' OR report.date LIKE '%${searchQuery}%'OR student.gender LIKE '%${searchQuery}%' `;
+    }
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Internal Server Error' });
+        } else {
+            const combinedData = result.map(row => ({
+                ...row,
+                studentInfo: {
+                    s_id: row.s_id,
+                    s_name: row.s_name,
+                }
+            }));
+            
+            res.send(combinedData);
+        }
+    });
+});
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
