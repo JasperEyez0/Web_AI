@@ -167,7 +167,7 @@ const Report = () => {
         <div className="flex ml-6 w-fit items-center justify-evenly relative">
           <NavLink  to={"/reportimgs"} className="p-2 bg-sky-800 text-[#fff] rounded text-[20px] mr-6"><IoImage /></NavLink>
           <button onClick={handleCategoryClick} className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center mr-6">Category {triangleIcon}</button>
-          <button className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center">Exprot <BiSolidFileExport /></button>
+          <button className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center">Export <BiSolidFileExport /></button>
 
           {/* Popup */}
           {showCategoryPopup && (
