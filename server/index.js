@@ -321,9 +321,13 @@ app.get('/report', (req, res) => {
     const searchQuery = req.query.search || '';
 
     let query = `
-        SELECT report.*, student.*
-        FROM student
-        LEFT JOIN report ON student.s_id = report.s_id
+        SELECT report.*, student.*, 
+        CASE 
+            WHEN report.s_id = 'stranger' THEN report.gender
+            ELSE student.gender
+        END AS gender
+        FROM report
+        LEFT JOIN student ON student.s_id = report.s_id
     `;
 
     if (searchQuery) {
@@ -339,14 +343,16 @@ app.get('/report', (req, res) => {
                 ...row,
                 studentInfo: {
                     s_id: row.s_id,
-                    s_name: row.s_name,
+                    s_name: row.s_name
                 }
             }));
-            
+
             res.send(combinedData);
+            console.log(combinedData);
         }
     });
 });
+
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');

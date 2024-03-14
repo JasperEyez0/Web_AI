@@ -103,7 +103,7 @@ const Report = () => {
   }, [searchQuery]);
 
   const fetchReport = async () => {
-    console.log(searchQuery)
+    //console.log(searchQuery)
     try {
   
       // ส่งค่าไปยังเซิร์ฟเวอร์
@@ -296,13 +296,13 @@ const Report = () => {
             {report.map((data, index) => (
               <tr key={index} className='border-collapse border border-slate-300 h-[32px] bg-white'>
                 <td>
-                  {selectedCategories.studentId && <span>{data.s_id}</span>}
+                  {selectedCategories.studentId && <span>{data.s_id || "null"}</span>}
                 </td>
                 <td>
-                  {selectedCategories.name && <span>{data.s_name} {data.s_sname}</span>}
+                  {selectedCategories.name && <span>{data.s_name} {data.s_sname || "Stranger"}</span>}
                 </td>
                 <td>
-                  {selectedCategories.age && <span>{calculateAge(data.dateofbirth)}</span>}
+                  {selectedCategories.age && <span>{calculateAge(data.dateofbirth) || data.age}</span>}
                 </td>
                 <td>
                   {selectedCategories.mood && <span>{data.mood}</span>}
@@ -311,7 +311,7 @@ const Report = () => {
                   {selectedCategories.datetime && <span>{data.date}</span>}
                 </td>
                 <td>
-                  {selectedCategories.gender && <span>{data.gender}</span>}
+                  {selectedCategories.gender && <span>{data.gender || data.gender}</span>}
                 </td>
                 <td>
                   {selectedCategories.img && <span>{data.pic_r}</span>}
