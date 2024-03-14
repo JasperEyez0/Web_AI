@@ -1,0 +1,50 @@
+[
+    [
+        "./model/database/face\\face_0.jpeg",
+        {
+            "s_id": "stranger",
+            "pic_r": "./model/database/face\\face_0.jpeg",
+            "pic_cam": "./model/database/full/full_244.jpeg",
+            "date": "14/03/2024 16:22:14",
+            "mood": "sad",
+            "age": 27,
+            "gender": "Man"
+        }
+    ],
+    [
+        "./model/database/face\\face_243.jpeg",
+        {
+            "s_id": "stranger",
+            "pic_r": "./model/database/face\\face_243.jpeg",
+            "pic_cam": "./model/database/full/full_244.jpeg",
+            "date": "14/03/2024 16:22:14",
+            "mood": "fear",
+            "age": 35,
+            "gender": "Man"
+        }
+    ],
+    [
+        "./model/database/face\\face_244.jpeg",
+        {
+            "s_id": "stranger",
+            "pic_r": "./model/database/face\\face_244.jpeg",
+            "pic_cam": "./model/database/full/full_244.jpeg",
+            "date": "14/03/2024 16:22:14",
+            "mood": "sad",
+            "age": 26,
+            "gender": "Man"
+        }
+    ],
+    [
+        "./model/database/face\\face_44.jpeg",
+        {
+            "s_id": "stranger",
+            "pic_r": "./model/database/face\\face_44.jpeg",
+            "pic_cam": "./model/database/full/full_244.jpeg",
+            "date": "14/03/2024 16:22:14",
+            "mood": "sad",
+            "age": 26,
+            "gender": "Man"
+        }
+    ]
+]

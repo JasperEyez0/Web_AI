@@ -4,6 +4,8 @@ import numpy as np
 from deepface import DeepFace
 import glob
 import json
+import datetime
+from connecter import update_database_from_json
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
@@ -15,15 +17,15 @@ detectvision = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fronta
 
 count = 0
 previous_face_image = None
+current_time = datetime.datetime.now()
 
 def detect_face():
     global count
     global previous_face_image
     ret, frame = camera.read()
-    cv2.imwrite('./model/database/Guests.jpeg', frame)
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = detectvision.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
+    faces = detectvision.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=10, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
 
     face_image_resized = None
 
@@ -36,9 +38,9 @@ def detect_face():
                 error = mse(previous_face_image, face_image_resized)
                 print(f'Mean Squared Error: {error}')
                 if error > 110:
-                    predict_and_save(face_image_resized)
+                    predict_and_save(face_image_resized, frame)
             else:
-                predict_and_save(face_image_resized)
+                predict_and_save(face_image_resized, frame)
             print(count)
 
     for (x, y, w, h) in faces:
@@ -48,19 +50,22 @@ def detect_face():
     previous_face_image = face_image_resized
     return cv2.imencode('.jpeg', frame)[1].tobytes()
 
-def predict_and_save(face_image_resized):
+def predict_and_save(face_image_resized, frame):
     global count
     global previous_face_image
     result_list = []
     models = ["VGG-Face", "Facenet", "Facenet512", "OpenFace", "DeepFace", "DeepID", "ArcFace", "Dlib", "SFace"]
 
-    face_filename = f'./model/database/face_{count}.jpeg'
+    face_filename = f'./model/database/face/face_{count}.jpeg'
     cv2.imwrite(face_filename, face_image_resized)
 
-    # ใช้ glob.glob เพื่อดึงไฟล์ทั้งหมดที่มีนามสกุล .jpeg ในโฟลเดอร์ ./database/Self (database)
+    full_filename = f'./model/database/full/full_{count}.jpeg'
+    cv2.imwrite(full_filename, frame)
+
+    # ใช้ glob.glob เพื่อดึงไฟล์ทั้งหมดที่มีนามสกุล .jpeg ในโฟลเดอร์
     imgdb_path = glob.glob("../server/student_folders/*/*.jpeg")
 
-    img_folder_path = "./model/database/*.jpeg"
+    img_folder_path = "./model/database/face/*.jpeg"
     img_paths = glob.glob(img_folder_path)
 
     for img_path in img_paths:
@@ -70,25 +75,39 @@ def predict_and_save(face_image_resized):
             result = DeepFace.verify(db_img, img_path, model_name=models[0], enforce_detection=False)
             val_ver.append(result["verified"])
 
-        # any ใน list มี True 1ตัว ให้เป็น True
         if any(val_ver):
             # Predict emotion
             anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion"))
-            res = [anaimg[0]["dominant_emotion"]]
-            result_list.append((img_path, res))
+            res = {
+                "s_id": db_img,
+                "pic_r": img_path,
+                "pic_cam": full_filename,
+                "date": current_time.strftime("%d/%m/%Y %H:%M:%S"),
+                "mood": anaimg[0]["dominant_emotion"]
+            }
+            # ตรวจสอบว่าข้อมูลซ้ำซ้อนหรือไม่ก่อนที่จะเพิ่มเข้า result_list
+            if (f"face_{count}.jpeg", res) not in result_list:
+                result_list.append((f"face_{count}.jpeg", res))
 
-            with open('my_list.json', 'w') as f:
-                json.dump(result_list, f, indent=4)
-            
         else:
             # Predict emotion, age, and gender
             anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion", "age", "gender"))
-            ser = [anaimg[0]["dominant_emotion"], anaimg[0]["age"], anaimg[0]["dominant_gender"]]
-            result_list.append((img_path, ser))
+            res = {
+                "s_id": "stranger",
+                "pic_r": img_path,
+                "pic_cam": full_filename,
+                "date": current_time.strftime("%d/%m/%Y %H:%M:%S"),
+                "mood": anaimg[0]["dominant_emotion"],
+                "age": anaimg[0]["age"],
+                "gender": anaimg[0]["dominant_gender"]
+            }
+            # ตรวจสอบว่าข้อมูลซ้ำซ้อนหรือไม่ก่อนที่จะเพิ่มเข้า result_list
+            if (f"face_{count}.jpeg", res) not in result_list:
+                result_list.append((img_path, res))
 
-            with open('my_list.json', 'w') as f:
-                json.dump(result_list, f, indent=4)
-
+    with open('./model/my_list.json', 'w') as f:
+        json.dump(result_list, f, indent=4)
+    update_database_from_json()
 
 
 def mse(image1, image2):
