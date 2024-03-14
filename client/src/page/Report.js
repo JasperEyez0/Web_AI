@@ -6,7 +6,9 @@ import { GoTriangleLeft, GoTriangleRight } from "react-icons/go";
 import { BiSolidFileExport } from "react-icons/bi";
 
 import Axios from 'axios'
+import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react'
+import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const Report = () => {
@@ -19,6 +21,17 @@ const Report = () => {
   const [showCategoryPopup, setShowCategoryPopup] = useState(false);
   const [triangleIcon, setTriangleIcon] = useState(<GoTriangleLeft />);
   const [selectedCount, setSelectedCount] = useState(0);
+
+  const [hidden, setHidden] = useState(true); // สร้าง state เพื่อเก็บสถานะ hidden
+
+  const [file, setFile] = useState(null);
+  const [src, setSrc] = useState(null);
+  const [crop, setCrop] = useState({
+    width: 200,
+    height: 200,
+  });
+  const [image, setImage] = useState(null);
+  const [output, setOutput] = useState(null);
 
   const [selectedCategories, setSelectedCategories] = useState({
     all: true,
@@ -143,6 +156,87 @@ const Report = () => {
     return null; // หรือค่าที่ต้องการสำหรับข้อมูลที่ไม่สามารถคำนวณอายุได้
   }
 
+  const cropImageNow = () => {
+    if (image) {  // Ensure image is not null before proceeding
+      const canvas = document.createElement('canvas');
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const ctx = canvas.getContext('2d');
+
+      const pixelRatio = window.devicePixelRatio;
+      canvas.width = crop.width * pixelRatio;
+      canvas.height = crop.height * pixelRatio;
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      ctx.imageSmoothingQuality = 'high';
+
+      ctx.drawImage(
+        image,
+        crop.x * scaleX,
+        crop.y * scaleY,
+        crop.width * scaleX,
+        crop.height * scaleY,
+        0,
+        0,
+        crop.width,
+        crop.height
+      );
+
+      // Converting to base64
+      const base64Image = canvas.toDataURL('image/jpeg');
+      setOutput(base64Image);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
+    selectImage(selectedFile);
+  };
+
+  const selectImage = (file) => {
+    setSrc(URL.createObjectURL(file));
+  };
+
+  const onImageLoaded = useCallback((img) => {
+    setImage(img);
+    setCrop({ aspect: 1 / 1, unit: 'px', width: 100, height: 100 });
+  }, []);
+
+  const handleCropChange = (newCrop) => {
+    setCrop(newCrop); // เรียก setCrop เพื่ออัปเดตค่า crop
+    cropImageNow();    // เรียก cropImageNow เพื่อทำการ crop ภาพ
+  };
+
+  const handleButtonShowCrop = () => {
+    setHidden(!hidden); // เมื่อกดปุ่มจะสลับสถานะ hidden จาก true เป็น false หรือจาก false เป็น true
+  };
+
+  const handleSearchImg = async (e) => {
+    e.preventDefault(); // ป้องกันการรีเฟรชหน้าเว็บ
+    try {
+      cropImageNow(); // ทำการ crop ภาพก่อนจะทำการส่งไปที่ backend
+      const formData = new FormData();
+      formData.append('file', file); // เพิ่มไฟล์ที่ถูก crop เข้าใน FormData
+  
+      // ทำการส่งไฟล์ที่ถูก crop ไปยัง backend
+      const response = await axios.post('/verify', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+  
+      // นำเอาผลลัพธ์ที่ได้รับจาก backend มาใช้งานต่อได้ตามต้องการ
+      setReport(response.data.true_results);
+      console.log(response.data.true_results);
+      // console.log(report);
+    } catch (error) {
+      console.error('Error verifying image:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
 
@@ -165,7 +259,7 @@ const Report = () => {
 
         {/* Button next to searchbar */}
         <div className="flex ml-6 w-fit items-center justify-evenly relative">
-          <NavLink  to={"/reportimgs"} className="p-2 bg-sky-800 text-[#fff] rounded text-[20px] mr-6"><IoImage /></NavLink>
+          <button onClick={handleButtonShowCrop} className="p-2 bg-sky-800 text-[#fff] rounded text-[20px] mr-6"><IoImage /></button>
           <button onClick={handleCategoryClick} className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center mr-6">Category {triangleIcon}</button>
           <button className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center">Export <BiSolidFileExport /></button>
 
@@ -259,6 +353,32 @@ const Report = () => {
             </div>
           )}
         </div>
+      </div>
+      
+      {/* Crop box */}
+      <div className={`flex flex-col w-full h-fit my-10 px-24 justify-start ${hidden ? 'hidden' : ''}`}>
+        <div className="flex pt-10">
+            <div className='flex flex-col w-full justify-center items-center'>
+              <input
+                type="file"
+                name="file"
+                onChange={handleFileChange}
+                className='flex items-center justify-center pb-10'
+              />
+              {/* Crop section */}
+              {src && (
+                <div className='flex flex-col justify-center items-center pb-10'>
+                  <ReactCrop
+                    src={src}
+                    onImageLoaded={onImageLoaded}
+                    crop={crop}
+                    onChange={handleCropChange}
+                  />
+                </div>
+              )}
+              <button className='px-5 bg-sky-800 text-[#fff] rounded-lg text-[20px]' onClick={handleSearchImg}>Search Image</button>
+            </div>
+          </div>
       </div>
 
       {/* Body Center (Show data) */}

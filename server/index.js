@@ -348,11 +348,10 @@ app.get('/report', (req, res) => {
             }));
 
             res.send(combinedData);
-            console.log(combinedData);
+            //console.log(combinedData);
         }
     });
 });
-
 
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
