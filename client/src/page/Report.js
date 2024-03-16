@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react'
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import xmlbuilder from 'xmlbuilder';
 
 const Report = () => {
 
@@ -237,6 +238,38 @@ const Report = () => {
     }
   };
 
+  const generateXML = () => {
+    const root = xmlbuilder.create('data');
+    const timestamp = new Date().getTime();
+    const fileName = `data_${timestamp}.xml`;
+
+    report.forEach((data, index) => {
+      const row = root.ele('row', { key: index });
+      if (selectedCategories.studentId) row.ele('studentId', data.s_id || "null");
+      if (selectedCategories.name) row.ele('name', `${data.s_name} ${data.s_sname || "Stranger"}`);
+      if (selectedCategories.age) row.ele('age', calculateAge(data.dateofbirth) || data.age);
+      if (selectedCategories.mood) row.ele('mood', data.mood);
+      if (selectedCategories.datetime) row.ele('datetime', data.date);
+      if (selectedCategories.gender) row.ele('gender', data.gender || "null");
+      if (selectedCategories.img) row.ele('img', data.pic_r);
+      if (selectedCategories.fimg) row.ele('fimg', data.pic_cam);
+    });
+
+    const xmlString = root.end({ pretty: true });
+    console.log(xmlString); // เพื่อตรวจสอบ XML ที่สร้าง
+
+    // สร้างไฟล์ XML
+    const blob = new Blob([xmlString], { type: 'text/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex flex-col w-auto h-screen bg-[#E1F7FF]">
 
@@ -261,7 +294,7 @@ const Report = () => {
         <div className="flex ml-6 w-fit items-center justify-evenly relative">
           <button onClick={handleButtonShowCrop} className="p-2 bg-sky-800 text-[#fff] rounded text-[20px] mr-6"><IoImage /></button>
           <button onClick={handleCategoryClick} className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center mr-6">Category {triangleIcon}</button>
-          <button className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center">Export <BiSolidFileExport /></button>
+          <button onClick={generateXML} className="flex h-[36px] px-2 bg-sky-800 text-[#fff] rounded items-center">Export <BiSolidFileExport /></button>
 
           {/* Popup */}
           {showCategoryPopup && (
