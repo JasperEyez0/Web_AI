@@ -10,7 +10,6 @@ import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react'
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import xmlbuilder from 'xmlbuilder';
 
 const Report = () => {
 
