@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Kiosk</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/kiosk.css') }}">
 </head>
-<style>
-    
-</style>
 <body>
-    <header style="background-color: skyblue; paddaing: 20 px">
+    <header>
         <h1>Live</h1>
     </header>
     <img id="video-feed" src="" alt="Video Feed">
     <script>
         const videoFeed = document.getElementById('video-feed');
-        const updateInterval = 1000; 
+        const updateInterval = 1000;
 
         function updateImage() {
             videoFeed.src = "/Video"; 
@@ -30,7 +28,7 @@
             <p>Age</p>
             <p>Emotion</p>
         </div>
-    <footer style="background-color: skyblue; paddaing: 20 px"> 
+    <footer> 
         <h1>foot</h1>
     </footer>
 </body>

@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
+//const port = 8000
 const cors = require('cors');
 
 const bodyParser = require('body-parser')
@@ -15,7 +16,17 @@ const corsOptions = {
     credentials: true,
     optionsSuccessStatus: 204,
 };
-  
+/*
+let conn = null
+const iniMySQL = async () => {
+    conn = await mysql.createConnection({
+        host: 'db',
+        user: 'root',
+        password: 'root',
+        database: 'ai_project'
+    })
+}
+  */
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -83,7 +94,6 @@ app.post('/login', (req, res) => {
                 res.json({ status: 'error', message: 'login failed' })
                 return
             }
-
         })
 })
 
@@ -356,3 +366,10 @@ app.get('/report', (req, res) => {
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
 });
+
+/*
+app.listen(port, async () => {
+    await iniMySQL()
+    console.log('Server is running on port 8000');
+});
+*/

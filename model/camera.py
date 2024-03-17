@@ -6,6 +6,7 @@ import glob
 import json
 import datetime
 from connecter import update_database_from_json
+import os
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
@@ -25,7 +26,7 @@ def detect_face():
     ret, frame = camera.read()
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = detectvision.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=10, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
+    faces = detectvision.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=10, minSize=(300, 300), flags=cv2.CASCADE_SCALE_IMAGE)
 
     face_image_resized = None
 
@@ -37,7 +38,7 @@ def detect_face():
             if count > 0 and previous_face_image is not None:
                 error = mse(previous_face_image, face_image_resized)
                 print(f'Mean Squared Error: {error}')
-                if error > 110:
+                if error > 120:
                     predict_and_save(face_image_resized, frame)
             else:
                 predict_and_save(face_image_resized, frame)
@@ -76,14 +77,19 @@ def predict_and_save(face_image_resized, frame):
             val_ver.append(result["verified"])
 
         if any(val_ver):
+
+            s_id = os.path.basename(os.path.dirname(db_img))
+
             # Predict emotion
-            anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion"))
+            anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion", "age", "gender"))
             res = {
-                "s_id": db_img,
+                "s_id": s_id,
                 "pic_r": img_path,
                 "pic_cam": full_filename,
                 "date": current_time.strftime("%d/%m/%Y %H:%M:%S"),
-                "mood": anaimg[0]["dominant_emotion"]
+                "mood": anaimg[0]["dominant_emotion"],
+                "age": anaimg[0]["age"],
+                "gender": anaimg[0]["dominant_gender"]
             }
             # ตรวจสอบว่าข้อมูลซ้ำซ้อนหรือไม่ก่อนที่จะเพิ่มเข้า result_list
             if (f"face_{count}.jpeg", res) not in result_list:
@@ -129,9 +135,9 @@ def generate_frames():
 def index():
     return render_template("kiosk.html")
 
-@app.route('/Video')
-def Video():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+#@app.route('/Video')
+#def Video():
+    #return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

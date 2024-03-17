@@ -4,12 +4,32 @@ services:
   client:
     build: ./client
     ports:
-      - "3001:3000"  # แก้ไขพอร์ตที่ใช้บนเครื่องโฮสต์เป็น 3001
+      - "3000:3000"
 
   server:
     build: ./server
     ports:
-      - "5000:5000"
+      - "3001:8000"
 
-  model:
-    build: ./model
+  db:
+    image: mysql:latest
+    container_name: db
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ai_project
+    ports:
+     - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: db    # แก้ให้ตรงกับชื่อบริการของ MySQL
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+     - "8080:80"
+    depends_on:
+     - db

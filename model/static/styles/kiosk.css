@@ -1,0 +1,16 @@
+header {
+    background-color: skyblue;
+    padding-left: 30px;
+}
+
+footer {
+    background-color: skyblue;
+    padding-left: 30px;
+}
+
+#video-feed {
+    display: flex;
+    justify-content: start;
+    min-width: 1080px;
+    min-height: 720px;
+}
