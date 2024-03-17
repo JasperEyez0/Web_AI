@@ -1,5 +1,5 @@
 import cv2
-from flask import Flask, Response, render_template
+from flask import Flask, render_template, Response
 import numpy as np
 from deepface import DeepFace
 import glob
@@ -7,6 +7,7 @@ import json
 import datetime
 from connecter import update_database_from_json
 import os
+import mysql.connector
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
@@ -130,14 +131,42 @@ def generate_frames():
         frame_bytes = detect_face()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n\r\n')
+        
+
+# ฟังก์ชันสำหรับเชื่อมต่อฐานข้อมูลและดึงข้อมูล
+def get_data_from_database():
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="ai_project"
+    )
+
+    if conn:
+        print("Connected Successfully")
+    else:
+        print("Connection Not Established")
+
+    select_users = "SELECT s_id, pic_r, mood, age, gender FROM report"
+    cursor = conn.cursor()
+    cursor.execute(select_users)
+    result = cursor.fetchall()
+
+    filtered_result = [row for row in result if row[2]]  # กรองข้อมูลเฉพาะที่ val_ver เป็น True
+
+    return filtered_result
+
 
 @app.route('/')
 def index():
-    return render_template("kiosk.html")
+    # ดึงข้อมูลจากฐานข้อมูล
+    data = get_data_from_database()
+    # ส่งข้อมูลไปยัง HTML template
+    return render_template("kiosk.html", data=data)
 
-#@app.route('/Video')
-#def Video():
-    #return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/Video')
+def Video():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

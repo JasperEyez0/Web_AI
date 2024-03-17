@@ -10,7 +10,31 @@ footer {
 
 #video-feed {
     display: flex;
-    justify-content: start;
+    justify-content: center;
     min-width: 1080px;
     min-height: 720px;
+}
+
+.additional-info {
+    display: flex;
+    justify-content: center;
+    font-size: large;
+    font-weight: bold;
+}
+
+.box {
+    display: flex;
+    justify-content: center;
+}
+
+table, th, td {
+    border-collapse: collapse;
+    background-color: #F3F3F3;
+}
+
+th, td {
+    padding-top: 10px;
+    padding-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 40px;
 }

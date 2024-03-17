@@ -5,31 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kiosk</title>
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/kiosk.css') }}">
+    <!-- นำเข้าไฟล์ jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <header>
         <h1>Live</h1>
     </header>
     <img id="video-feed" src="" alt="Video Feed">
-    <script>
-        const videoFeed = document.getElementById('video-feed');
-        const updateInterval = 1000;
-
-        function updateImage() {
-            videoFeed.src = "/Video"; 
-            setTimeout(updateImage, updateInterval);
-        }
-
-        window.onload = updateImage;
-    </script>
-        <div>
-            <p>date</p>
-            <img src = "https://assets.petco.com/petco/image/upload/f_auto,q_auto/rabbit-care-sheet" style = "width: 200px;">
-            <p>Age</p>
-            <p>Emotion</p>
-        </div>
+    <div class="additional-info">
+        <p id="date-info">Date: </p>
+    </div>
+    <div class="box">
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>s_id</th>
+                    <th>pic_r</th>
+                    <th>mood</th>
+                    <th>age</th>
+                    <th>gender</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     <footer> 
         <h1>foot</h1>
     </footer>
+    <script>
+        const videoFeed = document.getElementById('video-feed');
+        const dateInfo = document.getElementById('date-info');
+        const updateInterval = 1000;
+
+        function updateImage() {
+            videoFeed.src = "/Video";
+            setTimeout(updateImage, updateInterval);
+        }
+
+        function updateDate() {
+            const currentDate = new Date();
+            const options = { day: 'numeric', month: 'numeric', year: 'numeric' };
+            dateInfo.textContent = "Date: " + currentDate.toLocaleDateString('th-TH', options);
+        }
+
+        window.onload = function() {
+            updateImage();
+            updateDate();
+            setInterval(updateAdditionalInfo, 60000); // อัปเดตข้อมูลเพิ่มเติมทุกๆ 1 นาที
+        };
+    </script>
 </body>
 </html>
