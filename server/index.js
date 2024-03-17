@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
-//const port = 8000
 const cors = require('cors');
 
 const bodyParser = require('body-parser')
@@ -16,17 +15,7 @@ const corsOptions = {
     credentials: true,
     optionsSuccessStatus: 204,
 };
-/*
-let conn = null
-const iniMySQL = async () => {
-    conn = await mysql.createConnection({
-        host: 'db',
-        user: 'root',
-        password: 'root',
-        database: 'ai_project'
-    })
-}
-  */
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -41,10 +30,18 @@ const upload = multer({ dest: 'uploads/' }); // กำหนดโฟลเด�
 //middleware
 const { auth } = require('./middleware/auth')
 
+/*
 const db = mysql.createConnection({
     user: "root",
     host: "localhost",
     password: "",
+    database: "ai_project"
+})
+*/
+const db = mysql.createConnection({
+    user: "root",
+    host: "localhost",
+    password: "root",
     database: "ai_project"
 })
 

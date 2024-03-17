@@ -9,7 +9,10 @@ services:
   server:
     build: ./server
     ports:
-      - "3001:8000"
+      - "3001:3001"
+    depends_on:
+     db:
+      condition:  service_started
 
   db:
     image: mysql:latest
@@ -20,6 +23,8 @@ services:
       MYSQL_DATABASE: ai_project
     ports:
      - "3306:3306"
+    volumes:
+      - mysql_data_test:/var/lib/mysql
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
@@ -33,3 +38,6 @@ services:
      - "8080:80"
     depends_on:
      - db
+volumes:
+  mysql_data_test: # กำหนดชื่อ volume ที่ต้องการจะสร้าง
+    driver: local
