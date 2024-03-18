@@ -20,6 +20,8 @@ function Greetword() {
   }, [fetchData]);
 
   const handleAddGreet = async () => {
+    console.log(newGreet.greeting)
+    console.log(newGreet.g_category)
     try {
       await Axios.post('http://localhost:3001/greetword', {
         greeting: newGreet.greeting,
@@ -58,18 +60,20 @@ function Greetword() {
   const getCategoryText = (value) => {
     switch (value) {
       case 0:
-        return 'neutral';
+        return 'Select Feel';
       case 1:
-        return 'happy';
+        return 'neutral';
       case 2:
-        return 'surprise';
+        return 'happy';
       case 3:
-        return 'fear';
+        return 'surprise';
       case 4:
-        return 'sad';
+        return 'fear';
       case 5:
-        return 'disgust';
+        return 'sad';
       case 6:
+        return 'disgust';
+      case 7:
         return 'angry';
       default:
         return '';
@@ -109,13 +113,14 @@ function Greetword() {
             value={newGreet.g_category}
             onChange={(e) => setNewGreet({ ...newGreet, g_category: e.target.value })}
           >
-            <option value="0">neutral</option>
-            <option value="1">happy</option>
-            <option value="2">surprise</option>
-            <option value="3">fear</option>
-            <option value="4">sad</option>
-            <option value="5">disgust</option>
-            <option value="6">angry</option>
+            <option value="0">Select Feel</option>
+            <option value="1">neutral</option>
+            <option value="2">happy</option>
+            <option value="3">surprise</option>
+            <option value="4">fear</option>
+            <option value="5">sad</option>
+            <option value="6">disgust</option>
+            <option value="7">angry</option>
           </select>
           <button
             type="submit"

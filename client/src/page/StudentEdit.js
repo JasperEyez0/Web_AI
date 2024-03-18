@@ -90,7 +90,7 @@ const StudentEdit = () => {
       .then((res) => {
         console.log('Student updated successfully:', res.data);
         alert('Edit Success');
-        navigate('/student');
+        //navigate('/student');
       })
       .catch((err) => {
         console.log('Error updating student:', err);
@@ -190,12 +190,21 @@ const StudentEdit = () => {
               value={student.s_id || ""}
               onChange={(e) => setStudent({ ...student, s_id: e.target.value })}
             />
-
+            {/*
             <input
               type="date"
               placeholder="วันเกิด"
               className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
               value={moment(student.dateofbirth).format('YYYY-MM-DD') || ""}
+              onChange={(e) => setStudent({ ...student, dateofbirth: e.target.value })}
+            />
+            */}
+            
+            <input
+              type="date"
+              placeholder="วันเกิด"
+              className='min-w-[100px] max-w-[150px] px-2.5 py-[2px] rounded-lg'
+              value={student.dateofbirth || ""}
               onChange={(e) => setStudent({ ...student, dateofbirth: e.target.value })}
             />
 
