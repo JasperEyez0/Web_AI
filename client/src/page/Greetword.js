@@ -1,21 +1,13 @@
-import React from 'react'
-
-import Axios from 'axios'
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Axios from 'axios';
 import { RiDeleteBin5Fill } from "react-icons/ri";
 
-function Greetword () {
-
-  //const token = localStorage.getItem('token');
-  //console.log(token)
-
+function Greetword() {
   const [greetData, setGreetData] = useState([]);
-  const [newGreet, setNewGreet] = useState({ greeting: '', g_category: ''});
+  const [newGreet, setNewGreet] = useState({ greeting: '', g_category: '' });
 
-  // ประกาศ fetchData โดยใช้ useCallback เพื่อป้องกันการสร้างฟังก์ชันใหม่ในทุก render
   const fetchData = useCallback(async () => {
     try {
-      // ดึงข้อมูลจาก API endpoint
       const response = await Axios.get('http://localhost:3001/greetword');
       setGreetData(response.data);
     } catch (error) {
@@ -24,46 +16,45 @@ function Greetword () {
   }, []);
 
   useEffect(() => {
-    // เรียกใช้ fetchData เมื่อ component ถูกโหลด
     fetchData();
   }, [fetchData]);
 
   const handleAddGreet = async () => {
     try {
-      // ส่ง request ไปยัง API endpoint เพื่อเพิ่มข้อมูล
       await Axios.post('http://localhost:3001/greetword', {
         greeting: newGreet.greeting,
         g_category: newGreet.g_category
       });
-  
-      // หลังจากเพิ่มข้อมูลเสร็จ, เรียกใช้ fetchData เพื่อดึงข้อมูลทั้งหมดใหม่
+
       fetchData();
-  
-      // ล้างข้อมูลใน input fields
-      setNewGreet({ greeting: '', g_category:'' });
+
+      setNewGreet({ greeting: '', g_category: '' });
     } catch (error) {
       console.error('Error adding data:', error);
-  
-      // เพิ่ม console log เพื่อดู response ที่ได้มาจาก server
+
       if (error.response) {
         console.error('Server response:', error.response.data);
       }
     }
   };
 
-  const handleDeleteGreet = (greetGreeting) => {
-    // ส่ง request ไปยัง API endpoint เพื่อลบข้อมูล
-    Axios.delete(`http://localhost:3001/greetword/${greetGreeting}`)
+  const handleDeleteGreet = (feelid) => {
+    if (!feelid) {
+      console.error('Invalid feel_id:', feelid);
+      return; // หยุดฟังก์ชันถ้า feel_id ไม่ถูกต้อง
+    }
+  
+    Axios.delete(`http://localhost:3001/greetword/${feelid}`)
       .then((res) => {
         console.log('Data deleted successfully:', res.data);
-        // หลังจากลบข้อมูลเสร็จ, เรียกใช้ fetchData เพื่อดึงข้อมูลทั้งหมดใหม่
         fetchData();
+        setGreetData(greetData.filter(item => item.id !== feelid));
       })
       .catch((err) => {
         console.error('Error deleting data:', err);
       });
   };
-
+  
   const getCategoryText = (value) => {
     switch (value) {
       case 0:
@@ -81,7 +72,7 @@ function Greetword () {
       case 6:
         return 'angry';
       default:
-        return ''; // หากไม่ตรงกับค่าใดๆ
+        return '';
     }
   };
 
@@ -97,7 +88,9 @@ function Greetword () {
           className="flex flex-row w-full h-fit px-24 justify-evenly items-center"
           onSubmit={(e) => {
             e.preventDefault();
-            handleAddGreet();
+            if (newGreet.greeting.trim()) {
+              handleAddGreet();
+            }
           }}
         >
           <input
@@ -105,7 +98,10 @@ function Greetword () {
             placeholder="คำทักทาย"
             className="w-[600px] px-2.5 py-[2px] rounded"
             value={newGreet.greeting}
-            onChange={(e) => setNewGreet({ ...newGreet, greeting: e.target.value })}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              setNewGreet({ ...newGreet, greeting: inputValue });
+            }}
           />
           <select
             className="w-[200px] px-2.5 py-[2px] rounded"
@@ -121,7 +117,11 @@ function Greetword () {
             <option value="5">disgust</option>
             <option value="6">angry</option>
           </select>
-          <button type="submit" className="w-[60px] py-[2px] rounded bg-sky-800 text-white">
+          <button
+            type="submit"
+            className="w-[60px] py-[2px] rounded bg-sky-800 text-white"
+            disabled={!newGreet.greeting.trim()}
+          >
             Add
           </button>
         </form>
@@ -130,23 +130,24 @@ function Greetword () {
         <table className="min-w-[1200px] table-auto text-left">
           <thead>
             <tr>
+              <th className="py-4">id</th>
               <th className="py-4">คำทักทาย</th>
               <th className="py-4">ความรู้สึก</th>
-              <th className="py-4"> </th>
             </tr>
           </thead>
           <tbody>
             {greetData.map((item) => (
-              <tr key={item.id}  className='border-collapse border border-slate-300 h-[32px] bg-white'>
+              <tr key={item.feel_id} className='border-collapse border border-slate-300 h-[32px] bg-white'>
+                <td className="pl-[10px]">{item.feel_id}</td>
                 <td className="pl-[10px]">{item.greeting}</td>
                 <td>{getCategoryText(item.g_category)}</td>
                 <td className='flex justify-center'>
-                  <button
-                    onClick={() => handleDeleteGreet(item.greeting)}
-                    className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'
-                  >
-                    <RiDeleteBin5Fill />
-                  </button>
+                <button
+                  onClick={() => handleDeleteGreet(item.feel_id)}
+                  className='p-2 bg-red-400 text-[#000] rounded-xl text-[18px]'
+                >
+                  <RiDeleteBin5Fill />
+                </button>
                 </td>
               </tr>
             ))}
@@ -157,4 +158,4 @@ function Greetword () {
   );
 }
 
-export default Greetword
+export default Greetword;

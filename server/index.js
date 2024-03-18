@@ -30,21 +30,23 @@ const upload = multer({ dest: 'uploads/' }); // กำหนดโฟลเด�
 //middleware
 const { auth } = require('./middleware/auth')
 
-/*
+{/*localhost xmapp*/}
 const db = mysql.createConnection({
     user: "root",
     host: "localhost",
     password: "",
     database: "ai_project"
 })
-*/
+
+{/* docker */}
+/*
 const db = mysql.createConnection({
     user: "root",
     host: "localhost",
     password: "root",
     database: "ai_project"
 })
-
+*/
 app.get('/professor', (req, res) => {
     db.query("SELECT * FROM professor", (err, result) => {
         if (err) {
@@ -307,10 +309,10 @@ app.post('/greetword', (req, res) => {
     });
 });
 
-app.delete('/greetword/:greeting', (req, res) => {
-    const greetingToDelete = req.params.greeting;
+app.delete('/greetword/:feelid', (req, res) => {
+    const greetingToDelete = req.params.feelid;
 
-    db.query("DELETE FROM greetword WHERE greeting = ?", [greetingToDelete], (err, result) => {
+    db.query("DELETE FROM greetword WHERE feel_id = ?", [greetingToDelete], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ message: 'Internal Server Error' });
