@@ -8,6 +8,8 @@ previous_modification_time = None
 def update_database_from_json():
     global previous_modification_time  # เรียกใช้ตัวแปร global
 
+    setsay = None
+    
     # เชื่อมต่อกับฐานข้อมูล MySQL
     mydb = mysql.connector.connect(
         host="localhost",
@@ -26,8 +28,7 @@ def update_database_from_json():
     current_modification_time = os.path.getmtime('./model/my_list.json')
     if previous_modification_time is not None and current_modification_time > previous_modification_time:
         for entry in data:
-            if isinstance(entry, list):  # ตรวจสอบว่า entry เป็น list หรือไม่
-                face_filename = entry[0]
+            if isinstance(entry, list) and len(entry) > 1:  # ตรวจสอบว่า entry เป็น list และมีจำนวนรายการมากกว่า 1
                 details = entry[1]
 
                 # เช็คว่าข้อมูลที่จะเพิ่มเข้าฐานข้อมูล MySQL มีอยู่แล้วหรือไม่
@@ -41,9 +42,8 @@ def update_database_from_json():
                     sql = "INSERT INTO report (s_id, pic_r, pic_cam, date, mood, age, gender) VALUES (%s, %s, %s, %s, %s, %s, %s)"
                     val = (details['s_id'], details['pic_r'], details['pic_cam'], details['date'], details['mood'], details['age'], details['gender'])
                     mycursor.execute(sql, val)
+                    
             else:
-                face_filename = entry
-                # ดำเนินการเพิ่มโค้ดสำหรับกรณีที่ข้อมูลไม่มีรายละเอียดเพิ่มเติม
                 pass
 
         mydb.commit()  # ยืนยันการเปลี่ยนแปลงในฐานข้อมูล
@@ -57,4 +57,3 @@ def update_database_from_json():
 
     mycursor.close()
     mydb.close()
-

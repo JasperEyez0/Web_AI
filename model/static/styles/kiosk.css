@@ -11,6 +11,7 @@ footer {
 #video-feed {
     display: flex;
     justify-content: center;
+    width: 100%;
     min-width: 1080px;
     min-height: 720px;
 }
@@ -25,6 +26,9 @@ footer {
 .box {
     display: flex;
     justify-content: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 250px;
 }
 
 table, th, td {
@@ -37,4 +41,9 @@ th, td {
     padding-bottom: 20px;
     padding-left: 30px;
     padding-right: 40px;
+}
+
+thead {
+    position: sticky;
+    top: 0;
 }

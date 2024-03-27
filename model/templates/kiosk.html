@@ -28,7 +28,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for row in data %}
+                {% set reversed_data = data | reverse %}
+                {% for row in reversed_data %}
                 <tr>
                     <td>{{ row[0] }}</td>
                     <td>{{ row[1] }}</td>
@@ -62,7 +63,7 @@
         window.onload = function() {
             updateImage();
             updateDate();
-            setInterval(updateAdditionalInfo, 60000); // อัปเดตข้อมูลเพิ่มเติมทุกๆ 1 นาที
+            //setInterval(updateAdditionalInfo, 60000);
         };
     </script>
 </body>
