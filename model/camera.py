@@ -73,16 +73,16 @@ def predict_and_save(face_image_resized, frame):
     models = ["VGG-Face", "Facenet", "Facenet512", "OpenFace", "DeepFace", "DeepID", "ArcFace", "Dlib", "SFace"]
     current_time = datetime.datetime.now()
     
-    face_filename = f'./model/database/face/face_{count}.jpeg'
+    face_filename = f'./model/picdata/face/face_{count}.jpeg'
     cv2.imwrite(face_filename, face_image_resized)
 
-    full_filename = f'./model/database/full/full_{count}.jpeg'
+    full_filename = f'./model/picdata/full/full_{count}.jpeg'
     cv2.imwrite(full_filename, frame)
 
     # ใช้ glob.glob เพื่อดึงไฟล์ทั้งหมดที่มีนามสกุล .jpeg ในโฟลเดอร์
     imgdb_path = glob.glob("./server/student_folders/**/*.jpeg", recursive=True)
     
-    img_folder_path = "./model/database/face/*.jpeg"
+    img_folder_path = "./model/picdata/face/*.jpeg"
     img_paths = glob.glob(img_folder_path)
     sortedimg_paths = sorted(img_paths, key=lambda x: int(x.split('_')[-1].split('.')[0]))
     print(sortedimg_paths)
