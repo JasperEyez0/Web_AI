@@ -41,13 +41,13 @@ def get_greet():
 
                     sql_get_greet = "SELECT greeting FROM greetword WHERE g_category = %s"
                     mood_to_category = {'neutral': 1, 'happy': 2, 'surprise': 3, 'fear': 4, 'sad': 5, 'disgust': 6, 'angry': 7}
-                    print(details['mood'])
+                    # print(details['mood'])
                     g_cate = mood_to_category.get(details['mood'], 1)
                     val_get_greet = (g_cate,)
-                    print(val_get_greet)
+                    # print(val_get_greet)
                     mycursor.execute(sql_get_greet, val_get_greet)
                     setgreet_tuple = mycursor.fetchall()
-                    print(setgreet_tuple)
+                    # print(setgreet_tuple)
                     setgreet = random.choice(setgreet_tuple) if setgreet_tuple else None
 
                     if setgreet is not None:

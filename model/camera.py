@@ -38,7 +38,7 @@ def detect_face():
     ret, frame = camera.read()
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = detectvision.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=10, minSize=(300, 300), flags=cv2.CASCADE_SCALE_IMAGE)
+    faces = detectvision.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=10, minSize=(200, 200), flags=cv2.CASCADE_SCALE_IMAGE)
 
     face_image_resized = None
 
@@ -52,6 +52,7 @@ def detect_face():
                 print(f'Mean Squared Error: {error}')
                 if error > 120:
                     predict_and_save(face_image_resized, frame)
+                    # sayhi()
             else:
                 predict_and_save(face_image_resized, frame)
             print(count)
@@ -70,9 +71,8 @@ def predict_and_save(face_image_resized, frame):
     global getsay
     result_list = []
     models = ["VGG-Face", "Facenet", "Facenet512", "OpenFace", "DeepFace", "DeepID", "ArcFace", "Dlib", "SFace"]
-
     current_time = datetime.datetime.now()
-
+    
     face_filename = f'./model/database/face/face_{count}.jpeg'
     cv2.imwrite(face_filename, face_image_resized)
 
@@ -81,21 +81,19 @@ def predict_and_save(face_image_resized, frame):
 
     # ใช้ glob.glob เพื่อดึงไฟล์ทั้งหมดที่มีนามสกุล .jpeg ในโฟลเดอร์
     imgdb_path = glob.glob("./server/student_folders/**/*.jpeg", recursive=True)
-
+    
     img_folder_path = "./model/database/face/*.jpeg"
     img_paths = glob.glob(img_folder_path)
-    sorted_img_paths = sorted(img_paths, key=lambda x: int(x.split('_')[-1].split('.')[0])) #เรียงเลขจากชื่อไฟล์
-    #print(img_paths)
-    print(sorted_img_paths)
-    if sorted_img_paths:
-        img_path = sorted_img_paths[-1]  # เลือกภาพสุดท้ายจากลิสต์ของภาพ
-        print(img_path)
+    sortedimg_paths = sorted(img_paths, key=lambda x: int(x.split('_')[-1].split('.')[0]))
+    print(sortedimg_paths)
+    
+    if sortedimg_paths:
+        img_path = sortedimg_paths[-1]  # เลือกภาพสุดท้ายจากลิสต์ของภาพ
         val_ver = []
-
+        print(img_path)
         for db_img in imgdb_path:
             result = DeepFace.verify(db_img, img_path, model_name=models[0], enforce_detection=False)
             val_ver.append(result["verified"])
-            print(val_ver)
 
         if any(val_ver):
 
@@ -105,7 +103,7 @@ def predict_and_save(face_image_resized, frame):
             anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion", "age", "gender"))
             res = {
                 "s_id": s_id,
-                "pic_r": face_filename,
+                "pic_r": img_path,
                 "pic_cam": full_filename,
                 "date": current_time.strftime("%d/%m/%Y %H:%M:%S"),
                 "mood": anaimg[0]["dominant_emotion"],
@@ -114,14 +112,15 @@ def predict_and_save(face_image_resized, frame):
             }
             # ตรวจสอบว่าข้อมูลซ้ำซ้อนหรือไม่ก่อนที่จะเพิ่มเข้า result_list
             if (f"face_{count}.jpeg", res) not in result_list:
-                result_list.append((face_filename, res))
+                result_list.append((f"face_{count}.jpeg", res))
+            sayhi()
 
         else:
             # Predict emotion, age, and gender
             anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion", "age", "gender"))
             res = {
                 "s_id": "stranger",
-                "pic_r": face_filename,
+                "pic_r": img_path,
                 "pic_cam": full_filename,
                 "date": current_time.strftime("%d/%m/%Y %H:%M:%S"),
                 "mood": anaimg[0]["dominant_emotion"],
@@ -131,6 +130,7 @@ def predict_and_save(face_image_resized, frame):
             # ตรวจสอบว่าข้อมูลซ้ำซ้อนหรือไม่ก่อนที่จะเพิ่มเข้า result_list
             if (f"face_{count}.jpeg", res) not in result_list:
                 result_list.append((img_path, res))
+            sayhi()
 
     # ตรวจสอบขนาดของไฟล์ JSON
     file_size = os.path.getsize('./model/my_list.json')
@@ -154,7 +154,7 @@ def predict_and_save(face_image_resized, frame):
     # เรียกใช้ฟังก์ชันเพื่อรับค่า setname และ setgreet
     update_database_from_json()
     getsay = get_greet()
-    sayhi()
+    print("getsay HERE!!", getsay)
 
 def mse(image1, image2):
     if image1 is None or image2 is None:
@@ -210,4 +210,3 @@ def Video():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-    

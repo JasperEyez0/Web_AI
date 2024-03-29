@@ -14,7 +14,5 @@ RUN npm install
 # คัดลอกโค้ดของ server ไปยัง Docker image
 COPY . .
 
-EXPOSE 8001
-
 # กำหนดคำสั่งที่จะใช้เมื่อเริ่มต้น container
 CMD ["npm", "run", "dev"]

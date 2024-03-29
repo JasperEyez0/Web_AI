@@ -1,14 +1,13 @@
 import os
 import json
 import mysql.connector
+import pandas as pd
 
 # เริ่มต้นค่า previous_modification_time เป็น None
 previous_modification_time = None
 
 def update_database_from_json():
     global previous_modification_time  # เรียกใช้ตัวแปร global
-
-    setsay = None
     
     # เชื่อมต่อกับฐานข้อมูล MySQL
     mydb = mysql.connector.connect(
@@ -29,13 +28,21 @@ def update_database_from_json():
     if previous_modification_time is not None and current_modification_time > previous_modification_time:
         for entry in data:
             if isinstance(entry, list) and len(entry) > 1:  # ตรวจสอบว่า entry เป็น list และมีจำนวนรายการมากกว่า 1
+                face_filename = entry[0]
                 details = entry[1]
 
                 # เช็คว่าข้อมูลที่จะเพิ่มเข้าฐานข้อมูล MySQL มีอยู่แล้วหรือไม่
-                sql_check_duplicate = "SELECT * FROM report WHERE pic_r = %s"
-                val_check_duplicate = (details['pic_r'],)
+                # sql_check_duplicate = "SELECT * FROM report WHERE s_id = %s AND date = %s"
+                # val_check_duplicate = (details['s_id'], details['date'], )
+                # mycursor.execute(sql_check_duplicate, val_check_duplicate)
+                # แปลงวันที่จากสตริงเป็น datetime object
+                date_str = details['date']
+                date_datetime = pd.to_datetime(date_str)
+                sql_check_duplicate = "SELECT * FROM report WHERE s_id = %s AND DATE(date) = %s"
+                val_check_duplicate = (details['s_id'], date_datetime.date(), )  # เรียกใช้เมทอด .date() กับ datetime object
                 mycursor.execute(sql_check_duplicate, val_check_duplicate)
                 result = mycursor.fetchone()
+                print(result)
 
                 if not result:  # ถ้าไม่มีข้อมูลซ้ำอยู่ในฐานข้อมูล MySQL
                     # เพิ่มโค้ดสำหรับอัพเดตฐานข้อมูล
@@ -44,6 +51,7 @@ def update_database_from_json():
                     mycursor.execute(sql, val)
                     
             else:
+                face_filename = entry
                 pass
 
         mydb.commit()  # ยืนยันการเปลี่ยนแปลงในฐานข้อมูล
