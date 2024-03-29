@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
+
 const cors = require('cors');
 
 const bodyParser = require('body-parser')
@@ -39,14 +40,13 @@ const db = mysql.createConnection({
 })
 
 {/* docker */}
-/*
-const db = mysql.createConnection({
-    user: "root",
-    host: "localhost",
-    password: "root",
-    database: "ai_project"
-})
-*/
+// const db = mysql.createConnection({
+//     user: "root",
+//     host: "db",
+//     password: "root",
+//     database: "ai_project"
+// })
+
 app.get('/professor', (req, res) => {
     db.query("SELECT * FROM professor", (err, result) => {
         if (err) {
@@ -285,6 +285,7 @@ app.delete('/student/:studentId', (req, res) => {
     });
 });
 
+
 app.get('/greetword', (req, res) => {
     db.query("SELECT * FROM greetword", (err, result) => {
         if (err) {
@@ -309,10 +310,10 @@ app.post('/greetword', (req, res) => {
     });
 });
 
-app.delete('/greetword/:feelid', (req, res) => {
-    const greetingToDelete = req.params.feelid;
+app.delete('/greetword/:greeting', (req, res) => {
+    const greetingToDelete = req.params.greeting;
 
-    db.query("DELETE FROM greetword WHERE feel_id = ?", [greetingToDelete], (err, result) => {
+    db.query("DELETE FROM greetword WHERE greeting = ?", [greetingToDelete], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ message: 'Internal Server Error' });
@@ -362,13 +363,7 @@ app.get('/report', (req, res) => {
     });
 });
 
+{/* XAMPP AND DOCKER*/}
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
 });
-
-/*
-app.listen(port, async () => {
-    await iniMySQL()
-    console.log('Server is running on port 8000');
-});
-*/

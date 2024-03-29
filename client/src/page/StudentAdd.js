@@ -94,52 +94,74 @@ const StudentAdd = () => {
       validationErrors.birthDate === '' &&
       validationErrors.gender === ''
     ) {
-      // Validation passed, proceed with form submission
-      const formData = new FormData();
-  
-      // If there is an output (cropped image), use it instead of the original file
-      if (output) {
-        const blob = base64ToBlob(output);
-        formData.append('file', blob, 'cropped_image.jpeg');
+        // Validation passed, proceed with form submission
+        const formData = new FormData();
+    
+        // If there is an output (cropped image), use it instead of the original file
+        if (output) {
+          const blob = base64ToBlob(output);
+          formData.append('file', blob, 'cropped_image.jpeg');
+        } else {
+          formData.append('file', file);
+        }
+    
+        formData.append('firstName', values.firstName);
+        formData.append('lastName', values.lastName);
+        formData.append('studentId', values.studentId);
+        formData.append('birthDate', values.birthDate);
+        formData.append('gender', values.gender);
+
+        const imgTomodel = {
+          base64Image : output,
+          studentId: values.studentId
+        }
+        console.log("imgTomodel: ",imgTomodel)
+
+        // Send the first request to '/studentadd' endpoint
+        axios.post('http://localhost:3001/studentadd', formData)
+          .then((res1) => {
+            // Handle response for the first request
+            alert('Add Success');
+            navigate('/student');
+          })
+          .catch((err) => {
+            console.error('Error in first request:', err);
+            if (err.response) {
+                console.error(err.response.data);
+                console.error(err.response.status);
+                console.error(err.response.headers);
+            } else if (err.request) {
+                console.error(err.request);
+            } else {
+                console.error('Error', err.message);
+            }
+            alert('Add Failed. Check console for details.');
+          });
+        
+        // Send the second request to '/sendimg-model' endpoint
+        axios.post('http://localhost:3002/sendimg-model', imgTomodel)
+          .then((res2) => {
+            console.log('Second request response:', res2.data);
+          })
+          .catch((err) => {
+            console.error('Error in second request:', err);
+            if (err.response) {
+                console.error(err.response.data);
+                console.error(err.response.status);
+                console.error(err.response.headers);
+            } else if (err.request) {
+                console.error(err.request);
+            } else {
+                console.error('Error', err.message);
+            }
+          });
       } else {
-        formData.append('file', file);
-      }
-  
-      formData.append('firstName', values.firstName);
-      formData.append('lastName', values.lastName);
-      formData.append('studentId', values.studentId);
-      formData.append('birthDate', values.birthDate);
-      formData.append('gender', values.gender);
-  
-      axios
-        .post('http://localhost:3001/studentadd', formData)
-        .then((res) => {
-          alert('Add Success');
-          navigate('/student');
-        })
-        .catch((err) => {
-          console.error(err);
-          if (err.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
-            console.error(err.response.data);
-            console.error(err.response.status);
-            console.error(err.response.headers);
-          } else if (err.request) {
-            // The request was made but no response was received
-            console.error(err.request);
-          } else {
-            // Something happened in setting up the request that triggered an Error
-            console.error('Error', err.message);
-          }
-          alert('Add Failed. Check console for details.');
-        });
-    } else {
-      // Validation failed, handle errors (e.g., display error messages)
-      console.log('Validation failed:', validationErrors);
-      // You can handle the errors as needed, e.g., display error messages to the user
+        // Validation failed, handle errors (e.g., display error messages)
+        console.log('Validation failed:', validationErrors);
+        // You can handle the errors as needed, e.g., display error messages to the user
     }
-  };
+};
+
 
   function base64ToBlob(base64String) {
     const byteCharacters = atob(base64String.split(',')[1]);
