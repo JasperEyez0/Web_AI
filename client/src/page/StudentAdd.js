@@ -134,6 +134,31 @@ const StudentAdd = () => {
           }
           alert('Add Failed. Check console for details.');
         });
+
+        const imgTomodel = {
+          base64Image : output,
+          studentId: values.studentId
+        }
+        console.log("imgTomodel: ",imgTomodel)
+
+        // Send the second request to '/sendimg-model' endpoint
+        axios.post('http://localhost:3002/sendimg-model', imgTomodel)
+          .then((res2) => {
+            console.log('Second request response:', res2.data);
+          })
+          .catch((err) => {
+            console.error('Error in second request:', err);
+            if (err.response) {
+                console.error(err.response.data);
+                console.error(err.response.status);
+                console.error(err.response.headers);
+            } else if (err.request) {
+                console.error(err.request);
+            } else {
+                console.error('Error', err.message);
+            }
+          });
+
     } else {
       // Validation failed, handle errors (e.g., display error messages)
       console.log('Validation failed:', validationErrors);
