@@ -4,8 +4,7 @@ import { GoTriangleLeft, GoTriangleRight } from "react-icons/go";
 import { BiSolidFileExport } from "react-icons/bi";
 
 import Axios from 'axios'
-import axios from 'axios';
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 
 const Report = () => {
 
@@ -293,32 +292,32 @@ const Report = () => {
     
 
       {/* Body Center (Show data) */}
-      <div className="flex flex-row w-full h-fit max-h-[500px] px-24 overflow-y-scroll">
-        <table className='w-full table-auto text-left '>
+      <div className="flex flex-row w-full h-fit max-h-[500px] px-24 overflow-y-scroll ">
+        <table className='w-full table-auto text-left'>
           <thead>
             <tr>
-              <th className='py-4'>
+              <th className='py-4 sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.studentId && <span>รหัสนศ.</span>}
               </th>
-              <th className='py-4 pl-[10px]'>
+              <th className='py-4 pl-[10px] sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.name && <span>ชื่อ-สกุล</span>}
               </th>
-              <th className='py-4'>
+              <th className='py-4 sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.age && <span>อายุ</span>}
               </th>
-              <th className='py-4'>
+              <th className='py-4 sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.mood && <span>อารมณ์</span>}
               </th>
-              <th className='py-4'>
+              <th className='py-4 sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.datetime && <span>วันเวลา</span>}
               </th>
-              <th className='py-4'>
+              <th className='py-4 sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.gender && <span>เพศ</span>}
               </th>
-              <th className='py-4'>
+              <th className='py-4 sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.img && <span>รูป</span>}
               </th>
-              <th className='py-4'>
+              <th className='py-4 sticky top-0 bg-[#E1F7FF]'>
                 {selectedCategories.fimg && <span>รูปใหญ่</span>}
               </th>
             </tr>
