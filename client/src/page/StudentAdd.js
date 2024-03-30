@@ -142,6 +142,8 @@ const StudentAdd = () => {
         axios.post('http://localhost:3002/sendimg-model', imgTomodel)
           .then((res2) => {
             console.log('Second request response:', res2.data);
+            //console.log('Second request response Base64:', res2.data.base64Image);
+            //console.log('Second request response S_id:', res2.data.studentId);
           })
           .catch((err) => {
             console.error('Error in second request:', err);
@@ -161,7 +163,6 @@ const StudentAdd = () => {
         // You can handle the errors as needed, e.g., display error messages to the user
     }
 };
-
 
   function base64ToBlob(base64String) {
     const byteCharacters = atob(base64String.split(',')[1]);

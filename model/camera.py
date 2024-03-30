@@ -80,7 +80,7 @@ def predict_and_save(face_image_resized, frame):
     cv2.imwrite(full_filename, frame)
 
     # ใช้ glob.glob เพื่อดึงไฟล์ทั้งหมดที่มีนามสกุล .jpeg ในโฟลเดอร์
-    imgdb_path = glob.glob("./server/student_folders/**/*.jpeg", recursive=True)
+    imgdb_path = glob.glob("./model/imgFromServer/**/*.jpeg", recursive=True)
     
     img_folder_path = "./model/picdata/face/*.jpeg"
     img_paths = glob.glob(img_folder_path)

@@ -363,6 +363,35 @@ app.get('/report', (req, res) => {
     });
 });
 
+
+app.post('/sendimg-server', (req, res) => {
+    // รับข้อมูลรูปภาพและประเภทของรูปภาพจาก request body
+    const { imageData, imageType, filename } = req.body;
+    
+    // กำหนด path ที่ต้องการบันทึกภาพ
+    let folderPath = '';
+
+    // ทำการตรวจสอบประเภทของรูปภาพและดำเนินการตามเงื่อนไข
+    if (imageType === 'face') {
+        folderPath = 'imgFromModel/face';
+        // บันทึกรูปภาพลงในโฟลเดอร์ที่เซิร์ฟเวอร์ต้องการ
+        fs.writeFileSync(path.join(folderPath, filename), imageData, 'base64');
+        console.log('Received face image:', imageData);
+    } else if (imageType === 'full') {
+        folderPath = 'imgFromModel/full';
+        // บันทึกรูปภาพลงในโฟลเดอร์ที่เซิร์ฟเวอร์ต้องการ
+        fs.writeFileSync(path.join(folderPath, filename), imageData, 'base64');
+        console.log('Received full image:', imageData);
+    } else {
+      // ประเภทของรูปภาพไม่ถูกต้อง
+      return res.status(400).json({ error: 'Invalid image type' });
+    }
+  
+    // ส่งข้อความยืนยันการรับรูปภาพกลับไปยัง client
+    return res.status(200).json({ message: 'Image received successfully' });
+  });
+
+
 {/* XAMPP AND DOCKER*/}
 app.listen('3001', () => {
     console.log('Server is running on port 3001');
