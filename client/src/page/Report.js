@@ -293,8 +293,8 @@ const Report = () => {
     
 
       {/* Body Center (Show data) */}
-      <div className="flex flex-row w-full h-fit px-24">
-        <table className='w-full table-auto text-left'>
+      <div className="flex flex-row w-full h-fit max-h-[500px] px-24 overflow-y-scroll">
+        <table className='w-full table-auto text-left '>
           <thead>
             <tr>
               <th className='py-4'>
