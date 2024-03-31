@@ -32,7 +32,6 @@
                 {% for row in reversed_data %}
                 <tr>
                     <td>{{ row["s_id"] }}</td>
-                    <td>{{ row["pic_r"] }}</td>
                     <td><img src="{{ url_for('static', filename=row['pic_r'].replace('\\', '/').replace('/model', '')) }}" alt="Image"></td>
                     <td>{{ row["mood"] }}</td>
                     <td>{{ row["age"] }}</td>
@@ -52,12 +51,12 @@
         const dateInfo = document.getElementById('date-info');
         const updateInterval = 1000;
 
-        function updateImage() {
+        async function updateImage() {
             videoFeed.src = "/Video";
             setTimeout(updateImage, updateInterval);
         }
 
-        function updateDate() {
+        async function updateDate() {
             const currentDate = new Date();
             const options = { day: 'numeric', month: 'numeric', year: 'numeric' };
             dateInfo.textContent = "Date: " + currentDate.toLocaleDateString('th-TH', options);
@@ -66,7 +65,6 @@
         window.onload = function() {
             updateImage();
             updateDate();
-            //setInterval(updateAdditionalInfo, 60000);
         };
     </script>
 </body>
