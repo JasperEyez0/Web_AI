@@ -363,7 +363,6 @@ app.get('/report', (req, res) => {
     });
 });
 
-
 app.post('/sendimg-server', (req, res) => {
     // รับข้อมูลรูปภาพและประเภทของรูปภาพจาก request body
     const { imageData, imageType, filename } = req.body;
@@ -376,12 +375,12 @@ app.post('/sendimg-server', (req, res) => {
         folderPath = 'imgFromModel/face';
         // บันทึกรูปภาพลงในโฟลเดอร์ที่เซิร์ฟเวอร์ต้องการ
         fs.writeFileSync(path.join(folderPath, filename), imageData, 'base64');
-        console.log('Received face image:', imageData);
+        //console.log('Received face image:', imageData);
     } else if (imageType === 'full') {
         folderPath = 'imgFromModel/full';
         // บันทึกรูปภาพลงในโฟลเดอร์ที่เซิร์ฟเวอร์ต้องการ
         fs.writeFileSync(path.join(folderPath, filename), imageData, 'base64');
-        console.log('Received full image:', imageData);
+        //console.log('Received full image:', imageData);
     } else {
       // ประเภทของรูปภาพไม่ถูกต้อง
       return res.status(400).json({ error: 'Invalid image type' });
@@ -389,7 +388,109 @@ app.post('/sendimg-server', (req, res) => {
   
     // ส่งข้อความยืนยันการรับรูปภาพกลับไปยัง client
     return res.status(200).json({ message: 'Image received successfully' });
-  });
+});
+
+
+app.post('/datamodel-report', (req, res) => {
+    const reportData = req.body; // รับข้อมูลที่ส่งมาจาก client
+
+    // ดำเนินการบันทึกข้อมูลลงในฐานข้อมูล MySQL
+    db.query('INSERT INTO report (s_id, pic_r, pic_cam, date, mood, age, gender) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+             [reportData.s_id, reportData.pic_r, reportData.pic_cam, reportData.date, reportData.mood, reportData.age, reportData.gender],
+             (err, result) => {
+                 if (err) {
+                     console.error(err);
+                     return res.status(500).json({ error: 'Internal Server Error' });
+                 }
+                 console.log('Data from model added to the database successfully');
+                 res.status(200).json({ message: 'Data added to the database successfully' });
+             });
+});
+
+
+app.get('/model-report/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+    const date = req.query.date; // เพิ่มการรับค่า date จาก query parameter
+    const formattedDate = date.split(" ")[0]; // ตัด string ของ date เพื่อให้เหลือแค่วันที่
+    
+    let sql = "SELECT * FROM report WHERE s_id = ?";
+    let params = [studentId];
+
+    // เพิ่มเงื่อนไขใน SQL query ในกรณีที่มีค่า date ถูกส่งมา
+    if (formattedDate) {
+        sql += " AND SUBSTRING(date, 1, 10) = ?";
+        params.push(formattedDate);
+    }
+    
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            if (result.length === 0) {
+                // ส่งข้อมูล report กลับไป
+                res.json(result);
+            }
+        }
+    });
+});
+
+app.get('/get-report-fromdb', (req, res) => {
+    db.query("SELECT s_id, pic_r, mood, age, gender FROM report", (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Internal Server Error' });
+        } else {
+            //console.log(result)
+            res.send(result);
+        }
+    });
+})
+
+
+app.get('/student-from-server/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+
+    if (!studentId) {
+        // If studentId is not provided, return an error response
+        return res.status(400).json({ error: 'Student ID is required.' });
+    }
+
+    db.query("SELECT s_name FROM student WHERE s_id = ?", [studentId], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            // If student is found, return the result
+            res.json(result);
+        }
+    });
+})
+
+
+app.get('/getmood/:g_category', (req, res) => {
+    const g_category = req.params.g_category;
+    if (!g_category) {
+        // If g_category is not provided, return an error response
+        return res.status(400).json({ error: 'g_category is required.' });
+    }
+
+    db.query("SELECT greeting FROM greetword WHERE g_category = ?", [g_category], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            // If result > 1 ramdom
+            if (result.length > 1) {
+                const randomGreeting = result[Math.floor(Math.random() * result.length)].greeting;
+                console.log(randomGreeting)
+                res.json(randomGreeting);
+            } else {
+                res.json(result);
+            }
+        }
+    });
+})
 
 
 {/* XAMPP AND DOCKER*/}

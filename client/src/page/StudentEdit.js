@@ -1,10 +1,9 @@
 import React from 'react';
 import '../page/StudentEdit.css'; 
 
-import Axios from 'axios'
+import axios from 'axios'
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom';
-import moment from 'moment-timezone';
+import { useParams } from 'react-router-dom';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
@@ -22,7 +21,6 @@ const StudentEdit = () => {
   });
   const [image, setImage] = useState(null);
   const [output, setOutput] = useState(null);
-  const navigate = useNavigate();
 
   const [student, setStudent] = useState({
     s_name: '',
@@ -67,7 +65,7 @@ const StudentEdit = () => {
   
   const fetchSData = useCallback(() => {
     if (studentId) {
-      Axios.get(`http://localhost:3001/student/${studentId}`)
+      axios.get(`http://localhost:3001/student/${studentId}`)
         .then((res) => {
           setStudent((prevStudent) => ({
             ...prevStudent,
@@ -86,7 +84,7 @@ const StudentEdit = () => {
   }, [fetchSData, studentId]);
 
   const handleUpdate = () => {
-    Axios.put(`http://localhost:3001/student/${studentId}`, student)
+    axios.put(`http://localhost:3001/student/${studentId}`, student)
       .then((res) => {
         console.log('Student updated successfully:', res.data);
         alert('Edit Success');
@@ -139,13 +137,38 @@ const StudentEdit = () => {
         formData.append('file', file);
     }
 
-    Axios.post(`http://localhost:3001/studentadd/${studentId}`, formData)
-        .then((res) => {
-            console.log('Image added successfully:', res.data);
-        })
-        .catch((err) => {
-            console.log('Error adding image:', err);
-        });
+    axios.post(`http://localhost:3001/studentadd/${studentId}`, formData)
+      .then((res) => {
+          console.log('Image added successfully:', res.data);
+      })
+      .catch((err) => {
+          console.log('Error adding image:', err);
+      });
+
+    const imgTomodel = {
+      base64Image : output,
+      studentId: studentId
+    }
+
+    // Send the second request to '/sendimg-model' endpoint
+    axios.post('http://localhost:3002/sendimg-model', imgTomodel)
+    .then((res2) => {
+      console.log('Second request response:', res2.data);
+      //console.log('Second request response Base64:', res2.data.base64Image);
+      //console.log('Second request response S_id:', res2.data.studentId);
+    })
+    .catch((err) => {
+      console.error('Error in second request:', err);
+      if (err.response) {
+          console.error(err.response.data);
+          console.error(err.response.status);
+          console.error(err.response.headers);
+      } else if (err.request) {
+          console.error(err.request);
+      } else {
+          console.error('Error', err.message);
+      }
+    });
 };
   
   return (

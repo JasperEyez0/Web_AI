@@ -5,11 +5,9 @@ from deepface import DeepFace
 import glob
 import json
 import datetime
-from connecter import update_database_from_json
-from get_greet import get_greet
 import os
-import mysql.connector
 import pyttsx3
+import requests
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
@@ -21,13 +19,6 @@ detectvision = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fronta
 
 count = 0
 previous_face_image = None
-
-conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="ai_project"
-    )
 getsay = None
 with open('./model/my_list.json', 'w') as f:
     f.write('')
@@ -73,16 +64,16 @@ def predict_and_save(face_image_resized, frame):
     models = ["VGG-Face", "Facenet", "Facenet512", "OpenFace", "DeepFace", "DeepID", "ArcFace", "Dlib", "SFace"]
     current_time = datetime.datetime.now()
     
-    face_filename = f'./model/picdata/face/face_{count}.jpeg'
+    face_filename = f'./model/static/picdata/face/face_{count}.jpeg'
     cv2.imwrite(face_filename, face_image_resized)
 
-    full_filename = f'./model/picdata/full/full_{count}.jpeg'
+    full_filename = f'./model/static/picdata/full/full_{count}.jpeg'
     cv2.imwrite(full_filename, frame)
 
     # ใช้ glob.glob เพื่อดึงไฟล์ทั้งหมดที่มีนามสกุล .jpeg ในโฟลเดอร์
     imgdb_path = glob.glob("./model/imgFromServer/**/*.jpeg", recursive=True)
     
-    img_folder_path = "./model/picdata/face/*.jpeg"
+    img_folder_path = "./model/static/picdata/face/*.jpeg"
     img_paths = glob.glob(img_folder_path)
     sortedimg_paths = sorted(img_paths, key=lambda x: int(x.split('_')[-1].split('.')[0]))
     print(sortedimg_paths)
@@ -113,7 +104,7 @@ def predict_and_save(face_image_resized, frame):
             # ตรวจสอบว่าข้อมูลซ้ำซ้อนหรือไม่ก่อนที่จะเพิ่มเข้า result_list
             if (f"face_{count}.jpeg", res) not in result_list:
                 result_list.append((f"face_{count}.jpeg", res))
-            sayhi()
+                send_result_list(result_list)
 
         else:
             # Predict emotion, age, and gender
@@ -129,32 +120,13 @@ def predict_and_save(face_image_resized, frame):
             }
             # ตรวจสอบว่าข้อมูลซ้ำซ้อนหรือไม่ก่อนที่จะเพิ่มเข้า result_list
             if (f"face_{count}.jpeg", res) not in result_list:
-                result_list.append((img_path, res))
-            sayhi()
-
-    # ตรวจสอบขนาดของไฟล์ JSON
-    file_size = os.path.getsize('./model/my_list.json')
-    
-    # ตรวจสอบว่าไฟล์ว่างเปล่าหรือไม่
-    if file_size == 0:
-        with open('./model/my_list.json', 'w') as f:
-            json.dump(result_list, f, indent=4)
-    else:
-        # อ่านข้อมูล JSON ที่มีอยู่ในไฟล์
-        with open('./model/my_list.json') as file:
-            existing_data = json.load(file)
-
-        # เพิ่มข้อมูลใหม่ลงในลิสต์ของ JSON
-        existing_data.append(result_list)
-
-        # เขียนข้อมูล JSON ทั้งหมดลงในไฟล์
-        with open('./model/my_list.json', 'w') as file:
-            json.dump(existing_data, file, indent=4)
+                result_list.append((f"face_{count}.jpeg", res))
+                send_result_list(result_list)
         
     # เรียกใช้ฟังก์ชันเพื่อรับค่า setname และ setgreet
-    update_database_from_json()
     getsay = get_greet()
     print("getsay HERE!!", getsay)
+    sayhi()
 
 def mse(image1, image2):
     if image1 is None or image2 is None:
@@ -174,14 +146,21 @@ def generate_frames():
 
 # ฟังก์ชันสำหรับเชื่อมต่อฐานข้อมูลและดึงข้อมูล
 def get_data_from_database():
-    select_users = "SELECT s_id, pic_r, mood, age, gender FROM report"
-    cursor = conn.cursor()
-    cursor.execute(select_users)
-    result = cursor.fetchall()
+    url = 'http://localhost:3001/get-report-fromdb'  # URL ของเซิร์ฟเวอร์ Express.js
+    headers = {'Content-Type': 'application/json'}
+    response = requests.get(url, headers=headers)
+    print(response.text)
+    return response.text
 
-    filtered_result = [row for row in result if row[2]]  # กรองข้อมูลเฉพาะที่ val_ver เป็น True
 
-    return filtered_result
+# ฟังก์ชันสำหรับเชื่อมต่อฐานข้อมูลและดึงข้อมูล
+def get_greet():
+    url = 'http://localhost:3002/get-greet'  # URL ของเซิร์ฟเวอร์ Express.js
+    headers = {'Content-Type': 'application/json'}
+    response = requests.get(url, headers=headers)
+    print(response.text)
+    return response.text
+
 
 def sayhi():
     engine = pyttsx3.init()
@@ -197,10 +176,25 @@ def sayhi():
         #print("setname is None")
         pass
 
+def send_result_list(result_list):
+    url = 'http://localhost:3002/send-result-list'  # URL ของเซิร์ฟเวอร์ Express.js
+    headers = {'Content-Type': 'application/json'}
+    data = json.dumps({'result_list': result_list})
+    
+    response = requests.post(url, data=data, headers=headers)
+    
+    if response.status_code == 200:
+        print('Result list sent successfully')
+    else:
+        print('Failed to send result list')
+
 @app.route('/')
 def index():
     # ดึงข้อมูลจากฐานข้อมูล
-    data = get_data_from_database()
+    data_string = get_data_from_database()
+    # แปลงสตริง JSON เป็นโครงสร้างข้อมูล Python
+    data = json.loads(data_string)
+
     # ส่งข้อมูลไปยัง HTML template
     return render_template("kiosk.html", data=data)
 

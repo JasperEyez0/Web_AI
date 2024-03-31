@@ -3,6 +3,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 3002; // กำหนดพอร์ต
@@ -15,12 +16,13 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json()); // Middleware for parsing JSON body
+app.use(express.json({ limit: '10mb' })); // Middleware for parsing JSON body
 
 // กำหนดเส้นทางที่รูปภาพจะถูกเก็บไว้
 const imageFolderPath = 'imgFromServer';
 
-// สร้าง API endpoint สำหรับรับรูปภาพที่เป็น base64
+/* -------------- API รับมาจาก client ตอน Add student -------------- */
+//เก็บรูปลง Folder imgFromServer
 app.post('/sendimg-model', (req, res) => {
   //console.log("req: ",req.body.base64Image)
   const { base64Image, studentId } = req.body;
@@ -63,11 +65,10 @@ app.post('/sendimg-model', (req, res) => {
 
 });
 
+const faceImagePath = 'static/picdata/face'; // กำหนด path ของโฟลเดอร์ face
+const fullImagePath = 'static/picdata/full'; // กำหนด path ของโฟลเดอร์ full
 
-const faceImagePath = 'picdata/face'; // กำหนด path ของโฟลเดอร์ face
-const fullImagePath = 'picdata/full'; // กำหนด path ของโฟลเดอร์ full
-
-// ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลรูปภาพ
+/* -------------- Function ส่งรูปไปที่ server พร้อมกับข้อมูลรูปภาพ -------------- */
 function sendImageData(imageData, imageType, filename) {
   // ส่ง API request ไปยังเซิร์ฟเวอร์อีกตัว
   axios.post('http://localhost:3001/sendimg-server', { imageData, imageType, filename })
@@ -79,10 +80,10 @@ function sendImageData(imageData, imageType, filename) {
     });
 }
 
-// ฟังก์ชันสำหรับตรวจสอบการเปลี่ยนแปลงในโฟลเดอร์ face
+/* -------------- Function สำหรับตรวจสอบการเปลี่ยนแปลงในโฟลเดอร์ face -------------- */
 function watchFaceFolder() {
   fs.watch(faceImagePath, { recursive: true }, (eventType, filename) => {
-    console.log(`File ${filename} in face folder has been ${eventType}`);
+    //console.log(`File ${filename} in face folder has been ${eventType}`);
 
     // ตรวจสอบว่าเป็นการสร้างไฟล์ใหม่หรือไม่
     if (eventType === 'rename') {
@@ -93,10 +94,10 @@ function watchFaceFolder() {
   });
 }
 
-// ฟังก์ชันสำหรับตรวจสอบการเปลี่ยนแปลงในโฟลเดอร์ full
+/* -------------- Function สำหรับตรวจสอบการเปลี่ยนแปลงในโฟลเดอร์ full -------------- */
 function watchFullFolder() {
   fs.watch(fullImagePath, { recursive: true }, (eventType, filename) => {
-    console.log(`File ${filename} in full folder has been ${eventType}`);
+    //console.log(`File ${filename} in full folder has been ${eventType}`);
 
     // ตรวจสอบว่าเป็นการสร้างไฟล์ใหม่หรือไม่
     if (eventType === 'rename') {
@@ -107,11 +108,167 @@ function watchFullFolder() {
   });
 }
 
-// รันฟังก์ชันสำหรับตรวจสอบการเปลี่ยนแปลงในโฟลเดอร์ face และ full
+/* -------------- Function สำหรับสั่ง run watchFaceFolder() และ watchFullFolder() -------------- */
 function startWatchingFolders() {
   watchFaceFolder();
   watchFullFolder();
 }
+
+/* -------------- API รับมาจาก camera.py -------------- */
+//เก็บข้อมูลที่ predict ได้ลงในไฟล์ my_list.json
+app.post('/send-result-list', (req, res) => {
+  const { result_list } = req.body;
+
+  // ตรวจสอบขนาดของไฟล์ JSON
+  const filePath = 'my_list.json';
+  const fileStats = fs.statSync(filePath);
+  const fileSize = fileStats.size;
+
+  // ตรวจสอบว่าไฟล์ว่างเปล่าหรือไม่
+  if (fileSize === 0) {
+      fs.writeFileSync(filePath, JSON.stringify(result_list, null, 4));
+      updateDatabaseFromJson();
+  } else {
+      // อ่านข้อมูล JSON ที่มีอยู่ในไฟล์
+      const existingData = JSON.parse(fs.readFileSync(filePath));
+
+      // เพิ่มข้อมูลใหม่ลงในลิสต์ของ JSON
+      // ตรวจสอบว่า result_list เป็นอาร์เรย์หรือไม่
+      if (Array.isArray(result_list)) {
+          existingData.push(...result_list);
+      } else {
+          existingData.push(result_list);
+      }
+
+      // เขียนข้อมูล JSON ทั้งหมดลงในไฟล์
+      fs.writeFileSync(filePath, JSON.stringify(existingData, null, 4));
+      updateDatabaseFromJson();
+  }
+
+  // ส่ง response กลับเพื่อยืนยันการรับข้อมูล
+  res.status(200).json({ message: 'Result list received successfully' });
+});
+
+
+// เริ่มต้นค่า previous_modification_time เป็น null
+let previousModificationTime = null;
+
+/* -------------- Function เพิ่มข้อมูลลง report จากการอ่านไฟล์.json -------------- */
+async function updateDatabaseFromJson() {
+  // อ่านข้อมูลจากไฟล์ JSON
+  const jsonData = fs.readFileSync('my_list.json', 'utf-8');
+  const data = JSON.parse(jsonData);
+
+  // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
+  const currentModificationTime = fs.statSync('my_list.json').mtimeMs;
+  if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
+      for (const entry of data) {
+        // ตรวจสอบว่า entry เป็น array และมีความยาวมากกว่า 1 หรือไม่
+        if (typeof entry === 'object' && entry !== null && data.length > 1) {
+          const details = entry[1];
+          const formattedDate = details['date'].split(" ")[0];
+          const studentId = details['s_id']
+          const val = {
+            s_id : details['s_id'],
+            pic_r: details['pic_r'],
+            pic_cam: details['pic_cam'],
+            date: details['date'],
+            mood: details['mood'],
+            age: details['age'],
+            gender: details['gender']
+          }
+          console.log('formattedDate', formattedDate)
+
+          if(studentId.length === 13) {
+            // เช็คว่าข้อมูลที่จะเพิ่มเข้าฐานข้อมูลมีอยู่แล้วหรือไม่
+            const result = await axios.get(`http://localhost:3001/model-report/${studentId}?date=${formattedDate}`);
+            const responseData = result.data;
+            if (responseData) {
+              // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
+              await axios.post('http://localhost:3001/datamodel-report', val )
+                .then((response) => {
+                  console.log('API request sent successfully:', response.data);
+                })
+                .catch((error) => {
+                  console.error('Error sending API request:', error);
+                });
+            } else {
+              console.log('Data to be added to the database already exists.')
+            }
+          } else {
+            // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
+            await axios.post('http://localhost:3001/datamodel-report', val )
+            .then((response) => {
+              console.log('API request sent successfully:', response.data);
+            })
+            .catch((error) => {
+              console.error('Error sending API request:', error);
+            });
+          }
+        } else {
+          console.log("entry is null!")
+        }
+      }
+  } else {
+      console.log("ไม่มีการเปลี่ยนแปลงในไฟล์ JSON");
+  }
+
+  // อัพเดตเวลาการแก้ไขไฟล์ JSON
+  previousModificationTime = currentModificationTime; // กำหนดค่าใหม่ให้กับ previousModificationTime
+}
+
+
+/* -------------- Function ดึงข้อมูลจาก greetword จากการอ่านไฟล์.json -------------- */
+app.get('/get-greet', async (req, res) => {
+  let setsay = null;
+
+  try {
+    // อ่านข้อมูลจากไฟล์ JSON
+    const jsonData = fs.readFileSync('my_list.json', 'utf-8');
+    const data = JSON.parse(jsonData);
+
+    // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
+    const currentModificationTime = fs.statSync('my_list.json').mtimeMs;
+    if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
+      for (const entry of data[data.length - 1]) {
+        if (typeof entry === 'object' && entry !== null && data.length > 1) {
+            const details = entry;
+            const studentId = details['s_id']
+            const mood = details['mood']
+            const moodToCategory = { 'neutral': 1, 'happy': 2, 'surprise': 3, 'fear': 4, 'sad': 5, 'disgust': 6, 'angry': 7 };
+            const g_category = moodToCategory[mood] || 1;
+            if (studentId.length === 13) {
+                const setnameResponse = await axios.get(`http://localhost:3001/student-from-server/${studentId}`);
+                const setgreetResponse = await axios.get(`http://localhost:3001/getmood/${g_category}`);
+                
+                const setname = setnameResponse.data;
+                const setgreet = setgreetResponse.data;
+                console.log(setname);
+                console.log(setgreet[0]);
+                if (!setgreet[0]) {
+                  setsay = "สวัสดีครับ" + setname[0].s_name;
+                  console.log(setsay);
+                }else{
+                  setsay = setgreet[0].greeting + setname[0].s_name;
+                  console.log(setsay);
+                }
+            } else {
+              setsay = "สวัสดีครับ";
+              console.log(setsay);
+            }
+        }
+      }
+    }
+    // อัพเดตเวลาการแก้ไขไฟล์ JSON
+    previousModificationTime = currentModificationTime; // กำหนดค่าใหม่ให้กับ previousModificationTime
+    
+    res.json(setsay); // ส่งค่า setsay กลับเมื่อทุกอย่างเสร็จสมบูรณ์
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: 'Internal Server Error' }); // ส่งข้อความผิดพลาดเมื่อเกิดข้อผิดพลาด
+  }
+});
+
 
 // รันเซิร์ฟเวอร์
 app.listen(PORT, () => {
