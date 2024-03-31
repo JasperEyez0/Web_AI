@@ -162,10 +162,10 @@ async function updateDatabaseFromJson() {
   // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
   const currentModificationTime = fs.statSync('my_list.json').mtimeMs;
   if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
-      for (const entry of data) {
+      for (const entry of data[data.length - 1]) {
         // ตรวจสอบว่า entry เป็น array และมีความยาวมากกว่า 1 หรือไม่
         if (typeof entry === 'object' && entry !== null && data.length > 1) {
-          const details = entry[1];
+          const details = entry;
           const formattedDate = details['date'].split(" ")[0];
           const studentId = details['s_id']
           const val = {

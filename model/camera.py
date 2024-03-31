@@ -1,5 +1,5 @@
 import cv2
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, jsonify
 import numpy as np
 from deepface import DeepFace
 import glob
@@ -43,21 +43,20 @@ def detect_face():
                 print(f'Mean Squared Error: {error}')
                 if error > 120:
                     predict_and_save(face_image_resized, frame)
-                    # sayhi()
+                    count += 1
             else:
                 predict_and_save(face_image_resized, frame)
+                count += 1
             print(count)
 
     for (x, y, w, h) in faces:
         cv2.rectangle(frame, (x, y-20), (x+w, y+h+40), (255, 0, 255), 2)
 
-    count += 1
     previous_face_image = face_image_resized
     return cv2.imencode('.jpeg', frame)[1].tobytes()
 
 
 def predict_and_save(face_image_resized, frame):
-    global count
     global previous_face_image
     global getsay
     result_list = []
@@ -80,16 +79,16 @@ def predict_and_save(face_image_resized, frame):
     
     if sortedimg_paths:
         img_path = sortedimg_paths[-1]  # เลือกภาพสุดท้ายจากลิสต์ของภาพ
-        val_ver = []
+        val_ver = 0
         print(img_path)
         for db_img in imgdb_path:
-            result = DeepFace.verify(db_img, img_path, model_name=models[0], enforce_detection=False)
-            val_ver.append(result["verified"])
-
-        if any(val_ver):
-
             s_id = os.path.basename(os.path.dirname(db_img))
+            result = DeepFace.verify(db_img, img_path, model_name=models[0], enforce_detection=False)
+            if result["verified"]:
+                val_ver = 1
+                break
 
+        if (val_ver > 0):
             # Predict emotion
             anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion", "age", "gender"))
             res = {
@@ -105,7 +104,7 @@ def predict_and_save(face_image_resized, frame):
             if (f"face_{count}.jpeg", res) not in result_list:
                 result_list.append((f"face_{count}.jpeg", res))
                 send_result_list(result_list)
-
+                
         else:
             # Predict emotion, age, and gender
             anaimg = DeepFace.analyze(img_path, enforce_detection=False, actions=("emotion", "age", "gender"))
@@ -194,7 +193,7 @@ def index():
     data_string = get_data_from_database()
     # แปลงสตริง JSON เป็นโครงสร้างข้อมูล Python
     data = json.loads(data_string)
-
+    print("data : ",data)
     # ส่งข้อมูลไปยัง HTML template
     return render_template("kiosk.html", data=data)
 
