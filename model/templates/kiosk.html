@@ -32,7 +32,8 @@
                 {% for row in reversed_data %}
                 <tr>
                     <td>{{ row["s_id"] }}</td>
-                    <td><img src="{{ url_for('static', filename=row['pic_r'].replace('\\', '/').replace('/model', '')) }}" alt="Image"></td>
+                    <td>{{ row['pic_r'] }}</td>
+                    <td><img src="{{ url_for('static', filename=row['pic_r'].replace('\\', '/').replace('/model/static', '')[2:]) }}" alt="Image"></td>
                     <td>{{ row["mood"] }}</td>
                     <td>{{ row["age"] }}</td>
                     <td>{{ row["gender"] }}</td>

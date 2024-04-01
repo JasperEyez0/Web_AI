@@ -1,5 +1,5 @@
 import cv2
-from flask import Flask, render_template, Response, jsonify
+from flask import Flask, render_template, Response
 import numpy as np
 from deepface import DeepFace
 import glob
@@ -141,7 +141,7 @@ def generate_frames():
         frame_bytes = detect_face()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n\r\n')
-        
+
 
 # ฟังก์ชันสำหรับเชื่อมต่อฐานข้อมูลและดึงข้อมูล
 def get_data_from_database():
