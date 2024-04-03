@@ -18,6 +18,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(cors({origin: 'http://127.0.0.1:5000'}));
 app.use(express.json({ limit: '10mb' }));
 
 const c = require('lodash')
@@ -363,6 +364,30 @@ app.get('/report', (req, res) => {
     });
 });
 
+app.post('/sendimg-server', (req, res) => {
+    // รับข้อมูลรูปภาพและประเภทของรูปภาพจาก request body
+    const { imageDataface, imageDatafull, image_id } = req.body;
+
+    // ทำการตรวจสอบประเภทของรูปภาพและดำเนินการตามเงื่อนไข
+    if (imageDataface !== '' && imageDatafull !== '') {
+        db.query('INSERT INTO image (face, full, image_id) VALUES (?, ?, ?)',
+            [imageDataface, imageDatafull, image_id ], (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: 'Internal Server Error' });
+                }
+                console.log('image added to the database successfully');
+                res.status(200).json();
+            }
+        )
+    } else {
+      // ประเภทของรูปภาพไม่ถูกต้อง
+      return res.status(400).json({ error: 'Image is None' });
+    }
+    // ส่งข้อความยืนยันการรับรูปภาพกลับไปยัง client
+    return res.status(200).json({ message: 'Image received successfully' });
+});
+
 
 app.post('/datamodel-report', (req, res) => {
     const reportData = req.body; // รับข้อมูลที่ส่งมาจาก client
@@ -464,6 +489,18 @@ app.get('/getmood/:g_category', (req, res) => {
         }
     });
 })
+
+app.get('/get-last-report', (req, res) => {
+    db.query("SELECT s_id, pic_r, mood, age, gender FROM report ORDER BY number DESC LIMIT 5", (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Internal Server Error' });
+        } else {
+            console.log(result)
+            res.send(result);
+        }
+    });
+});
 
 
 {/* XAMPP AND DOCKER*/}

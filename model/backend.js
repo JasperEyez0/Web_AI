@@ -65,6 +65,8 @@ app.post('/sendimg-model', (req, res) => {
 
 });
 
+const ImagePath = 'static/picdata'; // กำหนด path ของโฟลเดอร์ picdata
+
 
 /* -------------- API รับมาจาก camera.py -------------- */
 //เก็บข้อมูลที่ predict ได้ลงในไฟล์ my_list.json
@@ -112,57 +114,58 @@ async function updateDatabaseFromJson() {
   // อ่านข้อมูลจากไฟล์ JSON
   const jsonData = fs.readFileSync('my_list.json', 'utf-8');
   const data = JSON.parse(jsonData);
-  console.log(data.length)
+
   // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
   const currentModificationTime = fs.statSync('my_list.json').mtimeMs;
   if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
     const lastEntry = data[data.length - 1];
-    if (typeof lastEntry === 'object' && lastEntry !== null && data.length > 1) {
-      const details = lastEntry;
-      const formattedDate = details['date'].split(" ")[0];
-      const studentId = details['s_id']
-      const imageface = fs.readFileSync(details['pic_r'], { encoding: 'base64' });
-      const imagefull = fs.readFileSync(details['pic_cam'], { encoding: 'base64' });
-
-      const val = {
-        s_id : details['s_id'],
-        pic_r: imageface,
-        pic_cam: imagefull,
-        date: details['date'],
-        mood: details['mood'],
-        age: details['age'],
-        gender: details['gender']
-      }
-
-      if(studentId.length === 13) {
-        // เช็คว่าข้อมูลที่จะเพิ่มเข้าฐานข้อมูลมีอยู่แล้วหรือไม่
-        const result = await axios.get(`http://localhost:3001/model-report/${studentId}?date=${formattedDate}`);
-        const responseData = result.data;
-        if (responseData) {
-          // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
-          await axios.post('http://localhost:3001/datamodel-report', val )
+        // ตรวจสอบว่า entry เป็น array และมีความยาวมากกว่า 1 หรือไม่
+        if (typeof lastEntry === 'object' && lastEntry !== null && data.length > 1) {
+          const details = lastEntry;
+          const formattedDate = details['date'].split(" ")[0];
+          const studentId = details['s_id']
+          const imageface = fs.readFileSync('face.jpeg', { encoding: 'base64' });
+          const imagefull = fs.readFileSync('full.jpeg', { encoding: 'base64' });
+          const val = {
+            s_id : details['s_id'],
+            pic_r: imageface,
+            pic_cam: imagefull,
+            date: details['date'],
+            mood: details['mood'],
+            age: details['age'],
+            gender: details['gender']
+          }
+          console.log(val)
+          if(studentId.length === 13) {
+            // เช็คว่าข้อมูลที่จะเพิ่มเข้าฐานข้อมูลมีอยู่แล้วหรือไม่
+            const result = await axios.get(`http://localhost:3001/model-report/${studentId}?date=${formattedDate}`);
+            const responseData = result.data;
+            if (responseData) {
+              // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
+              await axios.post('http://localhost:3001/datamodel-report', val )
+                .then((response) => {
+                  console.log('API request sent successfully:', response.data);
+                })
+                .catch((error) => {
+                  console.error('Error sending API request:', error);
+                });
+            } else {
+              console.log('Data to be added to the database already exists.')
+            }
+          } else if(studentId.length === 8) {
+            // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
+            await axios.post('http://localhost:3001/datamodel-report', val )
             .then((response) => {
               console.log('API request sent successfully:', response.data);
             })
             .catch((error) => {
               console.error('Error sending API request:', error);
             });
+          }
         } else {
-          console.log('Data to be added to the database already exists.')
+          console.log("entry is null!")
         }
-      } else if(studentId.length === 8) {
-        // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
-        await axios.post('http://localhost:3001/datamodel-report', val )
-        .then((response) => {
-          console.log('API request sent successfully:', response.data);
-        })
-        .catch((error) => {
-          console.error('Error sending API request:', error);
-        });
-      }
-    } else {
-      console.log("entry is null!")
-    }
+      
   } else {
       console.log("ไม่มีการเปลี่ยนแปลงในไฟล์ JSON");
   }
@@ -175,40 +178,44 @@ async function updateDatabaseFromJson() {
 /* -------------- Function ดึงข้อมูลจาก greetword จากการอ่านไฟล์.json -------------- */
 app.get('/get-greet', async (req, res) => {
   let setsay = null;
+
   try {
     // อ่านข้อมูลจากไฟล์ JSON
     const jsonData = fs.readFileSync('my_list.json', 'utf-8');
     const data = JSON.parse(jsonData);
+    console.log("อ่านไฟล์ละนะ")
 
     // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
     const currentModificationTime = fs.statSync('my_list.json').mtimeMs;
     if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
-      const lastEntry = data[data.length - 1];
-      if (typeof lastEntry === 'object' && lastEntry!== null && data.length > 1) {
-        const details = lastEntry;
-        const studentId = details['s_id']
-        const mood = details['mood']
-        const moodToCategory = { 'neutral': 1, 'happy': 2, 'surprise': 3, 'fear': 4, 'sad': 5, 'disgust': 6, 'angry': 7 };
-        const g_category = moodToCategory[mood] || 1;
-        console.log("เข้า if entry ละนะ")
-        if (studentId.length === 13) {
-          const setnameResponse = await axios.get(`http://localhost:3001/student-from-server/${studentId}`);
-          const setgreetResponse = await axios.get(`http://localhost:3001/getmood/${g_category}`);
-          const setname = setnameResponse.data;
-          const setgreet = setgreetResponse.data;
-          console.log(setname);
-          console.log(setgreet);
-          if (!setgreet) {
-            setsay = "สวัสดีครับ" + setname[0].s_name;
-            console.log(setsay)
-          }else{
-            setsay = setgreet[0].greeting + setname[0].s_name;
-            console.log(setsay);
-          }
-        } else {
-          setsay = "สวัสดีครับ";
-          console.log(setsay);
-        }
+        const lastEntry = data[data.length - 1];
+        if (typeof lastEntry === 'object' && lastEntry!== null && data.length > 1) {
+            const details = lastEntry;
+            const studentId = details['s_id']
+            const mood = details['mood']
+            const moodToCategory = { 'neutral': 1, 'happy': 2, 'surprise': 3, 'fear': 4, 'sad': 5, 'disgust': 6, 'angry': 7 };
+            const g_category = moodToCategory[mood] || 1;
+            if (studentId.length === 13) {
+                const setnameResponse = await axios.get(`http://localhost:3001/student-from-server/${studentId}`);
+                const setgreetResponse = await axios.get(`http://localhost:3001/getmood/${g_category}`);
+                
+                const setname = setnameResponse.data;
+                const setgreet = setgreetResponse.data;
+                console.log(setname);
+                console.log(setgreet);
+                if (!setgreet) {
+                setsay = "สวัสดีครับ" + setname[0].s_name;
+                console.log(setsay)
+                
+                }else{
+                  setsay = setgreet[0].greeting + setname[0].s_name;
+                console.log(setsay);
+                }
+            } else {
+              setsay = "สวัสดีครับ";
+              console.log(setsay);
+            }
+        
       }
     }
     // อัพเดตเวลาการแก้ไขไฟล์ JSON

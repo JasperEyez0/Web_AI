@@ -16,33 +16,10 @@
     <div class="additional-info">
         <p id="date-info">Date: </p>
     </div>
-    <div class="box">
-        <table id="data-table">
-            <thead>
-                <tr>
-                    <th>s_id</th>
-                    <th>pic_r</th>
-                    <th>mood</th>
-                    <th>age</th>
-                    <th>gender</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% set reversed_data = data | reverse %}
-                {% for row in reversed_data %}
-                <tr>
-                    <td>{{ row["s_id"] }}</td>
-                    <td>{{ row['pic_r'] }}</td>
-                    <td><img src="{{ url_for('static', filename=row['pic_r'].replace('\\', '/').replace('/model/static', '')[2:]) }}" alt="Image"></td>
-                    <td>{{ row["mood"] }}</td>
-                    <td>{{ row["age"] }}</td>
-                    <td>{{ row["gender"] }}</td>
-                </tr>
-                <tr>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div classname="box">
+        <div id="latest-events-container">
+            
+        </div>
     </div>
     <footer> 
         <h1>foot</h1>
@@ -51,13 +28,13 @@
         const videoFeed = document.getElementById('video-feed');
         const dateInfo = document.getElementById('date-info');
         const updateInterval = 1000;
-
-        async function updateImage() {
+        
+        function updateImage() {
             videoFeed.src = "/Video";
             setTimeout(updateImage, updateInterval);
         }
 
-        async function updateDate() {
+        function updateDate() {
             const currentDate = new Date();
             const options = { day: 'numeric', month: 'numeric', year: 'numeric' };
             dateInfo.textContent = "Date: " + currentDate.toLocaleDateString('th-TH', options);
@@ -67,6 +44,51 @@
             updateImage();
             updateDate();
         };
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            async function fetchLatestEvents() {
+                console.log("active");
+                try {
+                    const response = await fetch('http://localhost:3001/get-last-report');
+                    const data = await response.json();
+                    console.log("data is:", data);
+                    const container = document.getElementById('latest-events-container');
+                    container.innerHTML = ''; // Clear previous content
+                    data.forEach(event => {
+                        p = document.createElement('h1')
+                        p.innerHTML = `s_id : ${event.s_id}`
+                        p.innerHTML = `mood : ${event.mood}`
+                        p.innerHTML = `age : ${event.age}`
+                        p.innerHTML = `gender : ${event.gender}`
+
+
+                        img = document.createElement('img')
+                        img.classList.add("imglist")
+                        img.src = `data:image/jpeg;base64,${event.pic_r}`;
+                        const divBox = document.createElement('div');
+
+                        divBox.classList.add('box-text');
+
+                        const divText = document.createElement('div');
+
+                        divText.classList.add('text');
+
+                        divBox.appendChild(img);
+                        divBox.appendChild(p);
+
+                        container.appendChild(divBox);
+                    });
+                } catch (error) {
+                    console.error('Error fetching latest events:', error);
+                }
+            }
+
+            // Fetch latest events every 5 seconds (adjust as needed)
+            setInterval(fetchLatestEvents, 1000);
+
+            // Initial fetch on page load
+            fetchLatestEvents();
+        });
     </script>
 </body>
 </html>
