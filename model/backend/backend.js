@@ -112,11 +112,11 @@ let previousModificationTime = null;
 /* -------------- Function เพิ่มข้อมูลลง report จากการอ่านไฟล์.json -------------- */
 async function updateDatabaseFromJson() {
   // อ่านข้อมูลจากไฟล์ JSON
-  const jsonData = fs.readFileSync('my_list.json', 'utf-8');
+  const jsonData = fs.readFileSync('./backend/my_list.json', 'utf-8');
   const data = JSON.parse(jsonData);
 
   // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
-  const currentModificationTime = fs.statSync('my_list.json').mtimeMs;
+  const currentModificationTime = fs.statSync('./backend/my_list.json').mtimeMs;
   if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
     const lastEntry = data[data.length - 1];
         // ตรวจสอบว่า entry เป็น array และมีความยาวมากกว่า 1 หรือไม่
@@ -181,12 +181,12 @@ app.get('/get-greet', async (req, res) => {
 
   try {
     // อ่านข้อมูลจากไฟล์ JSON
-    const jsonData = fs.readFileSync('my_list.json', 'utf-8');
+    const jsonData = fs.readFileSync('./backend/my_list.json', 'utf-8');
     const data = JSON.parse(jsonData);
     console.log("อ่านไฟล์ละนะ")
 
     // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
-    const currentModificationTime = fs.statSync('my_list.json').mtimeMs;
+    const currentModificationTime = fs.statSync('./backend/my_list.json').mtimeMs;
     if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
         const lastEntry = data[data.length - 1];
         if (typeof lastEntry === 'object' && lastEntry!== null && data.length > 1) {
@@ -203,13 +203,13 @@ app.get('/get-greet', async (req, res) => {
                 const setgreet = setgreetResponse.data;
                 console.log(setname);
                 console.log(setgreet);
-                if (!setgreet) {
-                setsay = "สวัสดีครับ" + setname[0].s_name;
-                console.log(setsay)
-                
-                }else{
+                console.log(setgreet.length);
+                if (setgreet !== undefined && setgreet !== null && setgreet.length !== 0) {
                   setsay = setgreet[0].greeting + setname[0].s_name;
-                console.log(setsay);
+                  console.log(setsay)
+                }else{
+                  setsay = "สวัสดีครับ" + setname[0].s_name;
+                  console.log(setsay);
                 }
             } else {
               setsay = "สวัสดีครับ";

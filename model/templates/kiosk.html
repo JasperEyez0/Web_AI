@@ -9,21 +9,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Live</h1>
-    </header>
-    <img id="video-feed" src="" alt="Video Feed">
-    <div class="additional-info">
-        <p id="date-info">Date: </p>
-    </div>
-    <div classname="box">
-        <div id="latest-events-container">
-            
+    <div class="header"><span class="bullet">&#x2022; </span>Live <span id="date-info">Date: </span></div>
+    <div class="container">
+        <div class="v-box">
+            <img id="video-feed" src="" alt="Video Feed">
+        </div>
+        <div class="box">
+            <div id="latest-events-container">
+                
+            </div>
         </div>
     </div>
-    <footer> 
-        <h1>foot</h1>
-    </footer>
     <script>
         const videoFeed = document.getElementById('video-feed');
         const dateInfo = document.getElementById('date-info');
@@ -56,11 +52,12 @@
                     container.innerHTML = ''; // Clear previous content
                     data.forEach(event => {
                         p = document.createElement('h1')
-                        p.innerHTML = `s_id : ${event.s_id}`
-                        p.innerHTML = `mood : ${event.mood}`
-                        p.innerHTML = `age : ${event.age}`
-                        p.innerHTML = `gender : ${event.gender}`
-
+                        p.innerHTML = `
+                        <span">Student ID : </span> ${event.s_id}<br>
+                        <span">Mood : </span> ${event.mood}<br>
+                        <span">Age : </span> ${event.age}<br>
+                        <span">Gender : </span> ${event.gender}
+                        `;
 
                         img = document.createElement('img')
                         img.classList.add("imglist")

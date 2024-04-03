@@ -9,7 +9,6 @@ import os
 import pyttsx3
 import requests
 import threading
-import time
 
 app = Flask(__name__)
 
@@ -90,6 +89,7 @@ def cap_img(faces, frame):
     else:
         error = mse(previous_face_image, face_image_resized)
         if error > 130:
+            print("error : ", error)
             previous_face_image = face_image_resized
             predict_thread(face_image_resized, frame)
         else:
@@ -187,17 +187,9 @@ def index():
     data = json.loads(data_string)
     return render_template("kiosk.html", data=data)
 
-
 @app.route('/Video')
 def Video():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-# @app.route('/get_data')
-# def get_data():
-#     data_string = get_data_from_database()
-#     data = json.loads(data_string)
-#     time.sleep(30)
-#     return jsonify(data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
