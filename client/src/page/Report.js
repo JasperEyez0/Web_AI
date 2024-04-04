@@ -344,10 +344,10 @@ const Report = () => {
                   {selectedCategories.gender && <span>{data.gender || data.gender}</span>}
                 </td>
                 <td>
-                  {selectedCategories.img && <span>{data.pic_r}</span>}
+                  {selectedCategories.img && <span><img src={`data:image/jpeg;base64, ${data.pic_r}`} alt="รูป" /></span>}
                 </td>
                 <td>
-                  {selectedCategories.fimg && <span>{data.pic_cam}</span>}
+                  {selectedCategories.fimg && <span><img src={`data:image/jpeg;base64, ${data.pic_cam}`} alt="รูปใหญ่" className='w-[180px] h-[100px]'/></span>}
                 </td>
               </tr>
             ))}
