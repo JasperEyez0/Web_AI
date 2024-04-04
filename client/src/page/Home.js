@@ -15,7 +15,7 @@ function Home () {
   const username = localStorage.getItem('username')
 
   const fetchP = useCallback(() => {
-    Axios.get(`http://localhost:3001/professor?username=${username}`)
+    Axios.get(`http://192.168.15.227:5778/professor?username=${username}`)
       .then((res) => {
         const foundProfessor = res.data.find((professor) => professor.username === username);
         if (foundProfessor) {

@@ -118,7 +118,7 @@ const StudentAdd = () => {
         console.log("imgTomodel: ",imgTomodel)
 
         // Send the first request to '/studentadd' endpoint
-        axios.post('http://localhost:3001/studentadd', formData)
+        axios.post('http://192.168.15.227:5778/studentadd', formData)
           .then((res1) => {
             // Handle response for the first request
             alert('Add Success');
@@ -139,7 +139,7 @@ const StudentAdd = () => {
           });
         
         // Send the second request to '/sendimg-model' endpoint
-        axios.post('http://localhost:3002/sendimg-model', imgTomodel)
+        axios.post('http://192.168.15.227:5779/sendimg-model', imgTomodel)
           .then((res2) => {
             console.log('Second request response:', res2.data);
             //console.log('Second request response Base64:', res2.data.base64Image);

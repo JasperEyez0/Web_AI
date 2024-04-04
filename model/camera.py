@@ -146,7 +146,7 @@ def mse(image1, image2):
 
 
 def get_greet():
-    url = 'http://localhost:3002/get-greet'
+    url = 'http://192.168.15.227:5779/get-greet'
     headers = {'Content-Type': 'application/json'}
     response = requests.get(url, headers=headers)
     return response.text
@@ -167,7 +167,7 @@ def sayhi():
 
 
 def send_result_list(result_list):
-    url = 'http://localhost:3002/send-result-list'
+    url = 'http://192.168.15.227:5779/send-result-list'
     headers = {'Content-Type': 'application/json'}
     data = json.dumps({'result_list': result_list})
 

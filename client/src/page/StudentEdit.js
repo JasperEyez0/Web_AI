@@ -65,7 +65,7 @@ const StudentEdit = () => {
   
   const fetchSData = useCallback(() => {
     if (studentId) {
-      axios.get(`http://localhost:3001/student/${studentId}`)
+      axios.get(`http://192.168.15.227:5778/student/${studentId}`)
         .then((res) => {
           setStudent((prevStudent) => ({
             ...prevStudent,
@@ -84,7 +84,7 @@ const StudentEdit = () => {
   }, [fetchSData, studentId]);
 
   const handleUpdate = () => {
-    axios.put(`http://localhost:3001/student/${studentId}`, student)
+    axios.put(`http://192.168.15.227:5778/student/${studentId}`, student)
       .then((res) => {
         console.log('Student updated successfully:', res.data);
         alert('Edit Success');
@@ -137,7 +137,7 @@ const StudentEdit = () => {
         formData.append('file', file);
     }
 
-    axios.post(`http://localhost:3001/studentadd/${studentId}`, formData)
+    axios.post(`http://192.168.15.227:5778/studentadd/${studentId}`, formData)
       .then((res) => {
           console.log('Image added successfully:', res.data);
       })
@@ -151,7 +151,7 @@ const StudentEdit = () => {
     }
 
     // Send the second request to '/sendimg-model' endpoint
-    axios.post('http://localhost:3002/sendimg-model', imgTomodel)
+    axios.post('http://192.168.15.227:5779/sendimg-model', imgTomodel)
     .then((res2) => {
       console.log('Second request response:', res2.data);
       //console.log('Second request response Base64:', res2.data.base64Image);

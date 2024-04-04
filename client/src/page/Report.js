@@ -104,7 +104,7 @@ const Report = () => {
     try {
   
       // ส่งค่าไปยังเซิร์ฟเวอร์
-      const res = await Axios.get('http://localhost:3001/report', {
+      const res = await Axios.get('http://192.168.15.227:5778/report', {
         params: { search: searchQuery } // ส่งคำค้นหาไปยังเซิร์ฟเวอร์
       });
   

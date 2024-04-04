@@ -9,7 +9,7 @@ const app = express();
 const PORT = 3002; // กำหนดพอร์ต
 
 const corsOptions = {
-  origin: 'http://localhost:3000', // หรือที่ตั้ง React app ของคุณ
+  origin: 'http://192.168.15.227:5777', // หรือที่ตั้ง React app ของคุณ
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204
@@ -70,7 +70,7 @@ const ImagePath = 'static/picdata'; // กำหนด path ของโฟล�
 // /* -------------- Function ส่งรูปไปที่ server พร้อมกับข้อมูลรูปภาพ -------------- */
 // function sendImageData(imageDataface, imageDatafull, image_id) {
 //   // ส่ง API request ไปยังเซิร์ฟเวอร์อีกตัว
-//   axios.post('http://localhost:3001/sendimg-server', { imageDataface, imageDatafull, image_id })
+//   axios.post('http://192.168.15.227:5778/sendimg-server', { imageDataface, imageDatafull, image_id })
 //     .then((response) => {
 //       console.log('API request sent successfully:', response.data);
 //     })
@@ -186,11 +186,11 @@ async function updateDatabaseFromJson() {
           console.log(val)
           if(studentId.length === 13) {
             // เช็คว่าข้อมูลที่จะเพิ่มเข้าฐานข้อมูลมีอยู่แล้วหรือไม่
-            const result = await axios.get(`http://localhost:3001/model-report/${studentId}?date=${formattedDate}`);
+            const result = await axios.get(`http://192.168.15.227:5778/model-report/${studentId}?date=${formattedDate}`);
             const responseData = result.data;
             if (responseData) {
               // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
-              await axios.post('http://localhost:3001/datamodel-report', val )
+              await axios.post('http://192.168.15.227:5778/datamodel-report', val )
                 .then((response) => {
                   console.log('API request sent successfully:', response.data);
                 })
@@ -202,7 +202,7 @@ async function updateDatabaseFromJson() {
             }
           } else if(studentId.length === 8) {
             // ส่ง API ไปยังเซิร์ฟเวอร์พร้อมกับข้อมูลเก็บลง table report
-            await axios.post('http://localhost:3001/datamodel-report', val )
+            await axios.post('http://192.168.15.227:5778/datamodel-report', val )
             .then((response) => {
               console.log('API request sent successfully:', response.data);
             })
@@ -244,8 +244,8 @@ app.get('/get-greet', async (req, res) => {
             const moodToCategory = { 'neutral': 1, 'happy': 2, 'surprise': 3, 'fear': 4, 'sad': 5, 'disgust': 6, 'angry': 7 };
             const g_category = moodToCategory[mood] || 1;
             if (studentId.length === 13) {
-                const setnameResponse = await axios.get(`http://localhost:3001/student-from-server/${studentId}`);
-                const setgreetResponse = await axios.get(`http://localhost:3001/getmood/${g_category}`);
+                const setnameResponse = await axios.get(`http://192.168.15.227:5778/student-from-server/${studentId}`);
+                const setgreetResponse = await axios.get(`http://192.168.15.227:5778/getmood/${g_category}`);
                 
                 const setname = setnameResponse.data;
                 const setgreet = setgreetResponse.data;

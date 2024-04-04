@@ -4,23 +4,23 @@ services:
   camera:
     build: ./model
     ports:
-      - "5000:5000"
+      - "5780:5780"
 
   backend:
     build: ./model/backend
     ports:
-      - "3002:3002"
+      - "5779:5779"
 
 
   client:
     build: ./client
     ports:
-      - "3000:3000"
+      - "5777:5777"
 
   server:
     build: ./server
     ports:
-      - "3001:3001"
+      - "5778:5778"
     depends_on:
      db:
       condition:  service_started

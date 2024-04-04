@@ -8,7 +8,7 @@ function Greetword() {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await Axios.get('http://localhost:3001/greetword');
+      const response = await Axios.get('http://192.168.15.227:5778/greetword');
       setGreetData(response.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -23,7 +23,7 @@ function Greetword() {
     console.log(newGreet.greeting)
     console.log(newGreet.g_category)
     try {
-      await Axios.post('http://localhost:3001/greetword', {
+      await Axios.post('http://192.168.15.227:5778/greetword', {
         greeting: newGreet.greeting,
         g_category: newGreet.g_category
       });
@@ -46,7 +46,7 @@ function Greetword() {
       return; // หยุดฟังก์ชันถ้า feel_id ไม่ถูกต้อง
     }
   
-    Axios.delete(`http://localhost:3001/greetword/${feelid}`)
+    Axios.delete(`http://192.168.15.227:5778/greetword/${feelid}`)
       .then((res) => {
         console.log('Data deleted successfully:', res.data);
         fetchData();

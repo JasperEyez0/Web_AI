@@ -17,7 +17,7 @@ const Student = () => {
     const [searchQuery, setSearchQuery] = useState('');
 
     const fetchS = useCallback(() => {
-      Axios.get(`http://localhost:3001/student`, {
+      Axios.get(`http://192.168.15.227:5778/student`, {
         params: { search: searchQuery } // ส่งคำค้นหาไปยังเซิร์ฟเวอร์
       })
         .then((res) => {
@@ -43,7 +43,7 @@ const Student = () => {
 
     const handleDelete = (studentId) => {
       if (window.confirm('คุณต้องการลบข้อมูลนักศึกษานี้หรือไม่?')) {
-        Axios.delete(`http://localhost:3001/student/${studentId}`)
+        Axios.delete(`http://192.168.15.227:5778/student/${studentId}`)
           .then((res) => {
             console.log('Student deleted successfully:', res.data);
             // ทำการ redirect หรือทำอย่างอื่นตามต้องการ

@@ -11,7 +11,7 @@ const jwt = require('jsonwebtoken')
 const secret = 'AI-Project'
 
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:5000'];
+const allowedOrigins = ['http://192.168.15.227:5777', 'http://192.168.15.227:5780'];
 const corsOptions = {
     origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
