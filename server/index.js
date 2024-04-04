@@ -10,15 +10,15 @@ const jsonParser = bodyParser.json()
 const jwt = require('jsonwebtoken')
 const secret = 'AI-Project'
 
+
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:5000'];
 const corsOptions = {
-    origin: 'http://localhost:3000', // หรือที่ตั้ง React app ของคุณ
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
-};
-
+  };
 app.use(cors(corsOptions));
-app.use(cors({origin: 'http://127.0.0.1:5000'}));
 app.use(express.json({ limit: '10mb' }));
 
 const c = require('lodash')
@@ -32,21 +32,21 @@ const upload = multer({ dest: 'uploads/' }); // กำหนดโฟลเด�
 //middleware
 const { auth } = require('./middleware/auth')
 
-{/*localhost xmapp*/}
-const db = mysql.createConnection({
-    user: "root",
-    host: "localhost",
-    password: "",
-    database: "ai_project"
-})
-
-{/* docker */}
+// {/*localhost xmapp*/}
 // const db = mysql.createConnection({
 //     user: "root",
-//     host: "db",
-//     password: "root",
+//     host: "localhost",
+//     password: "",
 //     database: "ai_project"
 // })
+
+// {/* docker */}
+const db = mysql.createConnection({
+    user: "root",
+    host: "db",
+    password: "root",
+    database: "ai_project"
+})
 
 app.get('/professor', (req, res) => {
     db.query("SELECT * FROM professor", (err, result) => {
@@ -67,10 +67,9 @@ app.post('/login', (req, res) => {
             }
             if (professor.length == 0) {
                 res.json({ status: 'error', message: 'no user found' })
-                returna
+                return
             }
 
-            console.log(professor[0].password)
             console.log(req.body.password)
 
             if (!c.isEqual(professor[0].password, req.body.password)) {
@@ -433,18 +432,6 @@ app.get('/model-report/:studentId', (req, res) => {
     });
 });
 
-app.get('/get-report-fromdb', (req, res) => {
-    db.query("SELECT s_id, pic_r, mood, age, gender FROM report", (err, result) => {
-        if (err) {
-            console.log(err);
-            res.status(500).json({ message: 'Internal Server Error' });
-        } else {
-            console.log(result)
-            res.send(result);
-        }
-    });
-})
-
 
 app.get('/student-from-server/:studentId', (req, res) => {
     const studentId = req.params.studentId;
@@ -496,7 +483,6 @@ app.get('/get-last-report', (req, res) => {
             console.log(err);
             res.status(500).json({ message: 'Internal Server Error' });
         } else {
-            console.log(result)
             res.send(result);
         }
     });

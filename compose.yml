@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  camera:
+    build: ./model
+    ports:
+      - "5000:5000"
+
+  backend:
+    build: ./model/backend
+    ports:
+      - "3002:3002"
+
+
   client:
     build: ./client
     ports:

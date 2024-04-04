@@ -31,7 +31,7 @@ body {
 .container {
     display: flex;
     flex-direction: row;
-    justify-content:space-between;
+    justify-content:center;
     height: 100%;
     width: 100%;
 }

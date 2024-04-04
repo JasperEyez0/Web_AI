@@ -67,6 +67,54 @@ app.post('/sendimg-model', (req, res) => {
 
 const ImagePath = 'static/picdata'; // กำหนด path ของโฟลเดอร์ picdata
 
+// /* -------------- Function ส่งรูปไปที่ server พร้อมกับข้อมูลรูปภาพ -------------- */
+// function sendImageData(imageDataface, imageDatafull, image_id) {
+//   // ส่ง API request ไปยังเซิร์ฟเวอร์อีกตัว
+//   axios.post('http://localhost:3001/sendimg-server', { imageDataface, imageDatafull, image_id })
+//     .then((response) => {
+//       console.log('API request sent successfully:', response.data);
+//     })
+//     .catch((error) => {
+//       console.error('Error sending API request:', error);
+//     });
+// }
+
+/* -------------- Function สำหรับเก็บข้อมูลไว้ส่ง Server  -------------- */
+// function startWatchingFolders() {
+//   let filePathface = '';
+//   let filePathfull = '';
+
+//   const watchPromise = new Promise((resolve, reject) => {
+//     fs.watch(ImagePath, { recursive: true }, (eventType, filename) => {
+//       // ตรวจสอบว่าเป็นการสร้างไฟล์ใหม่หรือไม่
+//       if (eventType === 'rename') {
+//         let image_split = filename.split('\\')[1];
+//         image_split = image_split.split('_')[0];
+//         if (image_split === 'face' && filePathface === '') {
+//           filePathface = path.join(ImagePath, filename);
+//         }
+//         if (image_split === 'full' && filePathfull === '') {
+//           filePathfull = path.join(ImagePath, filename);
+//         }
+//         // ตรวจสอบว่าทั้ง filePathface และ filePathfull ได้ถูกกำหนดค่าแล้วหรือไม่
+//         if (filePathface !== '' && filePathfull !== '') {
+//           resolve({ filePathface, filePathfull, filename });
+//         }
+//       }
+//     });
+//   });
+
+//   watchPromise.then(({ filePathface, filePathfull, filename }) => {
+//     const image_id = filename.split('_')[1];
+//     console.log(image_id)
+//     const imageDataface = fs.readFileSync(filePathface, { encoding: 'base64' });
+//     const imageDatafull = fs.readFileSync(filePathfull, { encoding: 'base64' });
+//     sendImageData(imageDataface, imageDatafull, image_id);
+//   }).catch(error => {
+//     console.error('An error occurred:', error);
+//   });
+// }
+
 
 /* -------------- API รับมาจาก camera.py -------------- */
 //เก็บข้อมูลที่ predict ได้ลงในไฟล์ my_list.json
@@ -74,7 +122,7 @@ app.post('/send-result-list', (req, res) => {
   const { result_list } = req.body;
 
   // ตรวจสอบขนาดของไฟล์ JSON
-  const filePath = 'my_list.json';
+  const filePath = '../my_list.json';
   const fileStats = fs.statSync(filePath);
   const fileSize = fileStats.size;
 
@@ -112,11 +160,11 @@ let previousModificationTime = null;
 /* -------------- Function เพิ่มข้อมูลลง report จากการอ่านไฟล์.json -------------- */
 async function updateDatabaseFromJson() {
   // อ่านข้อมูลจากไฟล์ JSON
-  const jsonData = fs.readFileSync('./backend/my_list.json', 'utf-8');
+  const jsonData = fs.readFileSync('../my_list.json', 'utf-8');
   const data = JSON.parse(jsonData);
 
   // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
-  const currentModificationTime = fs.statSync('./backend/my_list.json').mtimeMs;
+  const currentModificationTime = fs.statSync('../my_list.json').mtimeMs;
   if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
     const lastEntry = data[data.length - 1];
         // ตรวจสอบว่า entry เป็น array และมีความยาวมากกว่า 1 หรือไม่
@@ -124,8 +172,8 @@ async function updateDatabaseFromJson() {
           const details = lastEntry;
           const formattedDate = details['date'].split(" ")[0];
           const studentId = details['s_id']
-          const imageface = fs.readFileSync('face.jpeg', { encoding: 'base64' });
-          const imagefull = fs.readFileSync('full.jpeg', { encoding: 'base64' });
+          const imageface = fs.readFileSync('../face.jpeg', { encoding: 'base64' });
+          const imagefull = fs.readFileSync('../full.jpeg', { encoding: 'base64' });
           const val = {
             s_id : details['s_id'],
             pic_r: imageface,
@@ -181,12 +229,12 @@ app.get('/get-greet', async (req, res) => {
 
   try {
     // อ่านข้อมูลจากไฟล์ JSON
-    const jsonData = fs.readFileSync('./backend/my_list.json', 'utf-8');
+    const jsonData = fs.readFileSync('../my_list.json', 'utf-8');
     const data = JSON.parse(jsonData);
     console.log("อ่านไฟล์ละนะ")
 
     // ตรวจสอบการเปลี่ยนแปลงในไฟล์ JSON
-    const currentModificationTime = fs.statSync('./backend/my_list.json').mtimeMs;
+    const currentModificationTime = fs.statSync('../my_list.json').mtimeMs;
     if (previousModificationTime !== null && currentModificationTime > previousModificationTime) {
         const lastEntry = data[data.length - 1];
         if (typeof lastEntry === 'object' && lastEntry!== null && data.length > 1) {
@@ -203,7 +251,6 @@ app.get('/get-greet', async (req, res) => {
                 const setgreet = setgreetResponse.data;
                 console.log(setname);
                 console.log(setgreet);
-                console.log(setgreet.length);
                 if (setgreet !== undefined && setgreet !== null && setgreet.length !== 0) {
                   setsay = setgreet[0].greeting + setname[0].s_name;
                   console.log(setsay)
